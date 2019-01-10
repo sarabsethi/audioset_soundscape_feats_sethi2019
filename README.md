@@ -7,6 +7,8 @@ Reproducability code for Sethi et. al. 2019 (in prep.)
 * Install dependencies (working on this list)
 * Reproduce figures by running python scripts: e.g. `python figure_scatter_lowdim.py`
 
+Tested using Anaconda running Python 3.6
+
 ## Figures
 
 Code is provided to reproduce all results figures in our publication. Once this repository is cloned and all dependencies are installed, you should be able to reproduce our exact plots by running the below files
@@ -27,7 +29,7 @@ Data is stored in the `data` directory in pickle files.
 
 ### Field data
 
-Field data is provided for each of our sampling sites
+Field data is provided for each of our sampling sites in pandas dataframes. Load files using `pd.read_pickle(file)`
 
 * `agb_public.pickle`: AGB data, taken as an average within 1km of each site (data from [Pfeifer et. al. 2015](http://iopscience.iop.org/article/10.1088/1748-9326/10/4/044019/meta))
 * `field_data_public.pickle`: Species community data at each site
@@ -38,6 +40,13 @@ AudioSet features are a raw 128 feature embeddding from the trained VGGish netwo
 
 Soundscape compound features are made up of: ADI, ACI, H, Spectral Entropy and Temporal Entropy (last three taken from Suer 2008). These are computed using the [Acoustic Indices package](https://github.com/patriceguyot/Acoustic_Indices). Again we average over 20 minute chunks of audio.
 
+Each file contains four variables:
+* `audio_feats_data`: matrix of audio feature data for each 20 minute chunk of audio
+* `labels`: integer labels corresponding to sites that each 20 minute chunk of audio belongs to
+* `classes`: site names for each label
+* `mins_per_feat`: minutes of audio per observation (always 20 for this study)
+
+The data provided is:
 * `mean_raw_audioset_feats.pickle`: Raw AudioSet features 
 * `mean_raw_audioset_feats_nowater.pickle`: Raw AudioSet features, excluding sites near water sources
 * `soundscape_vec.pickle`: Soundscape compound indices
