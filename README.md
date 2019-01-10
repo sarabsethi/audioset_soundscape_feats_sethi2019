@@ -34,7 +34,7 @@ Field data is provided for each of our sampling sites
 
 ### Audio feature data
 
-AudioSet features are a raw 128 feature embeddding from the trained VGGish network from Google's [AudioSet project](https://github.com/tensorflow/models/tree/master/research/audioset). This produces 1 feature per second, which we average over 20 minute chunks
+AudioSet features are a raw 128 feature embeddding from the trained VGGish network from Google's [AudioSet project](https://github.com/tensorflow/models/tree/master/research/audioset). This produces 1 feature vector per second of audio, which we average over 20 minute chunks.
 
 Soundscape compound features are made up of: ADI, ACI, H, Spectral Entropy and Temporal Entropy (last three taken from Suer 2008). These are computed using the [Acoustic Indices package](https://github.com/patriceguyot/Acoustic_Indices). Again we average over 20 minute chunks of audio.
 
