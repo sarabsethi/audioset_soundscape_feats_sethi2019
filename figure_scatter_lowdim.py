@@ -15,7 +15,7 @@ Reproduces Fig. X from publication
 
 # Feature sets and dimensionality reduction techniques to test
 feats = ['soundscape_vec','mean_raw_audioset_feats']
-dimreds = ['pca','umap_fast']
+dimreds = ['pca','umap_default']
 
 # Figure setup
 fig_s = 6
@@ -38,7 +38,7 @@ for f in feats:
         # Plot embedded data
         fig.add_subplot(n_subplots_y,n_subplots_x,subplt_idx)
         subplt_idx+=1
-        title = '{}'.format(get_feats_nice_name(f))
+        title = '{}'.format(get_feats_nice_name[f])
         plot_low_dim_space(data_red, data_red_labels, classes=classes,
             plt_title=title, mins_per_feat=mins_per_feat, agb_df=agb_df, dimred=dimred)
 

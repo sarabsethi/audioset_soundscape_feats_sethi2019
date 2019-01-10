@@ -43,7 +43,7 @@ def get_embedded_data(data,labels,classes,dimred,dims=2,saved_dimred=[]):
         labels (ndarray): labels of each of the observations - integer values
         classes (ndarray): name of each of the classes (maps labels to strings)
         dimdred (str): method of dimensionality reduction
-                       options: umap_fast, umap, umap_default, pca
+                       options: umap_clust, umap, umap_default, pca
         dims (int): number of dimensions to embed data into
         saved_dimred (str): filename of saved embedding
 
@@ -66,7 +66,7 @@ def get_embedded_data(data,labels,classes,dimred,dims=2,saved_dimred=[]):
             if dimred == 'umap':
                 # These are parameters for best clustering - lots of epochs takes a while
                 dim_red_obj = umap.UMAP(metric='euclidean', min_dist=0, n_neighbors=50, n_epochs=10000, random_state=42, n_components=dims)
-            elif dimred == 'umap_fast':
+            elif dimred == 'umap_clust':
                 # Same as above but fewer epochs
                 dim_red_obj = umap.UMAP(metric='euclidean', min_dist=0, n_neighbors=50, random_state=42, n_components=dims)
             elif dimred == 'umap_default':

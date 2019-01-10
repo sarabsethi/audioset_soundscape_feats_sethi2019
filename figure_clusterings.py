@@ -19,7 +19,7 @@ feats = ['soundscape_vec','mean_raw_audioset_feats']
 
 # Argument to change dimensionality reduction technique - UMAP works best for clustering
 parser = argparse.ArgumentParser()
-parser.add_argument('-dimred', default='umap_fast', type=str, help='Method of dimensionality reduction to use')
+parser.add_argument('-dimred', default='umap_clust', type=str, help='Method of dimensionality reduction to use')
 args = parser.parse_args()
 
 # Figure setup
@@ -47,7 +47,7 @@ for f in feats:
     # Plot clusters from audio feature data
     fig.add_subplot(n_subplots_y,n_subplots_x,subplt_idx)
     subplt_idx+=1
-    plot_pdist_clusts(aud_cl, aud_pdist, aud_labs, '{} (p = {})'.format(get_feats_nice_name(f),vi_pval))
+    plot_pdist_clusts(aud_cl, aud_pdist, aud_labs, '{} (p = {})'.format(get_feats_nice_name[f],vi_pval))
 
 # Plot clusters from species community data ("ground truth" of sorts)
 fig.add_subplot(n_subplots_y,n_subplots_x,subplt_idx)

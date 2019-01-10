@@ -37,7 +37,7 @@ for f in feats:
 
     n_feats = audio_feats_data.shape[1]
 
-    # Get mean embedded feature vectors for each site 
+    # Get mean embedded feature vectors for each site
     data_red, data_red_labels = get_embedded_data(data=audio_feats_data,labels=labels,classes=classes,dims=dims,dimred=dimred)
     audio_mean_data, audio_mean_labels = get_audio_mean_data(data_red, labels=data_red_labels, classes=classes)
 
@@ -45,6 +45,6 @@ for f in feats:
     fig.add_subplot(n_subplots_y,n_subplots_x,subplt_idx)
     subplt_idx += 1
     plot_field_data_preds(audio_mean_data, audio_mean_labels, agb_df, 'Mean AGB')
-    plt.title('{}'.format(get_feats_nice_name(f)))
+    plt.title('{}'.format(get_feats_nice_name[f]))
 
 plt.show()

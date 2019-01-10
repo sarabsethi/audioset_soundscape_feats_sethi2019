@@ -57,6 +57,6 @@ for f in feats:
     plot_regr_dims(agb_scores, agb_pvals, agb_dims_x, args.dimred, colour='red', legend_txt='AGB')
     plot_regr_dims(alpha_scores, alpha_pvals, alpha_dims_x, args.dimred, colour='blue', legend_txt='AGB')
 
-    plt.title('{}'.format(get_feats_nice_name(f)))
+    plt.title('{}'.format(get_feats_nice_name[f]))
 
 plt.show()

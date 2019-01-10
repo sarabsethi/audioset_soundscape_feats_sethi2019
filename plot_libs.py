@@ -8,16 +8,32 @@ from analysis_libs import reg_df_col_with_features
 '''
 This module provides functions to assist with plotting our data
 
+Dictionaries:
+    get_feats_nice_name
+
 Functions:
     get_site_colour
     get_site_pt_size_and_style
-    get_feats_nice_name
     get_dimred_nice_name
     smooth_density_curve
     plot_low_dim_space
     plot_pdist_clusts
     plot_regr_dims
 '''
+
+
+# Get human readable audio feature names
+get_feats_nice_name = {'soundscape_vec': 'Soundscape compound index',
+                       'mean_processed_audioset_feats': 'AudioSet features (post-processed)',
+                       'mean_raw_audioset_feats': 'AudioSet features'
+                       }
+
+# Get human readable dimensionality reduction names
+get_dimred_nice_name = {'umap': 'UMAP (slow clustering)',
+                        'umap_clust': 'UMAP (clustering)',
+                        'umap_default': 'UMAP',
+                        'pca': 'PCA'
+                        }
 
 
 # Colours are based on species community clusters
@@ -76,33 +92,6 @@ def get_site_pt_size_and_style(site, agb_df):
 
     return pt_sz, pt_marker
 
-
-def get_feats_nice_name(feat_str):
-    '''
-    Get human readable audio feature names
-    '''
-
-    if 'soundscape_vec' in feat_str:
-        return 'Soundscape compound index'
-
-    if 'mean_processed_audioset_feats' in feat_str:
-        return 'AudioSet features (post-processed)'
-
-    if 'mean_raw_audioset_feats' in feat_str:
-        return 'AudioSet features'
-
-
-def get_dimred_nice_name(dimred):
-    '''
-    Get human readable dimensionality reduction names
-    '''
-
-
-    if 'umap' in dimred:
-        return 'UMAP'
-
-    if 'pca' in dimred:
-        return 'PCA'
 
 def smooth_density_curve(data, interp_pts=1000):
     """
@@ -171,7 +160,7 @@ def plot_low_dim_space(embedded_data,labels,classes,plt_title,dimred,agb_df,uniq
         rec_indices = np.where(labels == i)[0]
         class_labels.append('{} (N={} hrs)'.format(classes[i],round(len(rec_indices) * (mins_per_feat/60), 1)))
 
-    dimred_title = get_dimred_nice_name(dimred)
+    dimred_title = get_dimred_nice_name[dimred]
 
     # Loop through classes
     for i,unique_rec in enumerate(classes):
@@ -267,7 +256,7 @@ def plot_regr_dims(scores, pvals, dims_x, dimred, legend_txt='', colour='red'):
     plt.plot(dims_x,scores,c=colour,label='{} regression score'.format(legend_txt))
     plt.plot(dims_x,pvals,c=colour,ls='--',label='{} regression $p$'.format(legend_txt))
 
-    plt.xlabel('Number of {} dimensions'.format(get_dimred_nice_name(dimred)))
+    plt.xlabel('Number of {} dimensions'.format(get_dimred_nice_name[dimred]))
     plt.axhline(y=0.05,c='gray',ls='--')
     plt.text(1.5,0.06,'$p = 0.05$',color='gray')
 
