@@ -16,6 +16,7 @@ Reproduces Fig. X from publication
 
 # Feature sets to test
 feats = ['soundscape_vec', 'mean_raw_audioset_feats']
+dataset = 'PC_recordings'
 
 field_df = pd.read_pickle(os.path.join('data','field_data_public.pickle'))
 agb_df = pd.read_pickle(os.path.join('data','agb_public.pickle'))
@@ -34,7 +35,7 @@ subplt_idx = 1
 fig = plt.figure(figsize=(fig_s*n_subplots_x*1.5,fig_s*n_subplots_y))
 
 for f in feats:
-    with open(os.path.join('data','{}_nowater.pickle'.format(f)), 'rb') as savef:
+    with open(os.path.join('data','{}_{}_nowater.pickle'.format(dataset,f)), 'rb') as savef:
         audio_feats_data, labels, classes, mins_per_feat = pickle.load(savef)
 
     n_feats = audio_feats_data.shape[1]

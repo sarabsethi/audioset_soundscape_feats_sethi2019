@@ -16,6 +16,7 @@ Reproduces Fig. X from publication
 # Feature sets and dimensionality reduction techniques to test
 feats = ['soundscape_vec','mean_raw_audioset_feats']
 dimreds = ['pca','umap_default']
+dataset = 'PC_recordings'
 
 # Figure setup
 fig_s = 6
@@ -29,7 +30,7 @@ agb_df = pd.read_pickle(os.path.join('data','agb_public.pickle'))
 for f in feats:
     for dimred in dimreds:
         # Load data from pickle files
-        with open(os.path.join('data','{}.pickle'.format(f)), 'rb') as savef:
+        with open(os.path.join('data','{}_{}.pickle'.format(dataset,f)), 'rb') as savef:
             audio_feats_data, labels, classes, mins_per_feat = pickle.load(savef)
 
         # Embed data using UMAP or PCA

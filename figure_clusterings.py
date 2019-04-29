@@ -16,6 +16,7 @@ Reproduces Fig. X from publication
 
 # Feature sets to test
 feats = ['soundscape_vec','mean_raw_audioset_feats']
+dataset = 'PC_recordings'
 
 # Argument to change dimensionality reduction technique - UMAP works best for clustering
 parser = argparse.ArgumentParser()
@@ -33,7 +34,7 @@ field_df = pd.read_pickle(os.path.join('data','field_data_public.pickle'))
 
 for f in feats:
     # Load data from pickle file
-    with open(os.path.join('data','{}.pickle'.format(f)), 'rb') as savef:
+    with open(os.path.join('data','{}_{}.pickle'.format(dataset,f)), 'rb') as savef:
         audio_feats_data, labels, classes, mins_per_feat = pickle.load(savef)
 
     # Embed data and calculate mean feature vectors per site
@@ -47,7 +48,11 @@ for f in feats:
     # Plot clusters from audio feature data
     fig.add_subplot(n_subplots_y,n_subplots_x,subplt_idx)
     subplt_idx+=1
-    plot_pdist_clusts(aud_cl, aud_pdist, aud_labs, '{} (p = {})'.format(get_feats_nice_name[f],vi_pval))
+
+    if vi_pval == 0: p_str = 'p < 0.001'
+    else: p_str = 'p = {}'.format(vi_pval)
+
+    plot_pdist_clusts(aud_cl, aud_pdist, aud_labs, '{} ({})'.format(get_feats_nice_name[f],p_str))
 
 # Plot clusters from species community data ("ground truth" of sorts)
 fig.add_subplot(n_subplots_y,n_subplots_x,subplt_idx)
