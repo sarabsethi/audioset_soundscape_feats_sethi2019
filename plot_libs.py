@@ -100,6 +100,10 @@ def plot_multi_class_recalls(recalls, labels, average_accuracy, label_type, feat
     elif 'sscape' in feat: c = 'b'
     else: c = 'k'
 
+    # Convert decimals to percentages
+    recalls = recalls * 100
+    average_accuracy = average_accuracy * 100
+
     order = get_label_order(labels,label_type)
     recalls = np.asarray(recalls)
     recalls = recalls[order]
@@ -108,6 +112,7 @@ def plot_multi_class_recalls(recalls, labels, average_accuracy, label_type, feat
     plt.plot(recalls,c=c)
     ax = plt.gca()
     ax.axhline(y=average_accuracy,linestyle='--',c=c)
+    plt.text(0,average_accuracy,'{}%',color=c)
     ax.xaxis.set_ticks(range(len(labels)))
     ax.xaxis.set_ticklabels(labels)
 
@@ -181,16 +186,16 @@ def get_dimred_nice_name(raw_name):
 def get_label_nice_name(label, label_type):
 
     if label_type == 'dataset':
-        nice_names = {'audio_moths_sorted_june2019': 'Borneo (Audiomoth)',
-                      'PC_recordings': 'Borneo (Tascam)',
-                      'PC_recordings_nowater': 'Borneo (Tascam) (no water sites)',
-                      'dena_sabah_sorted_data': 'Borneo, various sites',
-                      'cornell_sorted_balanced_data': 'New York (summer)',
-                      'cornell_winter_sorted_balanced_data': 'New York (winter)',
-                      'cornell_seasonal_mic': 'New York',
-                      'cornell_nz_data_sorted': 'New Zealand',
-                      'sulawesi_sorted_data': 'Sulawesi',
-                      'wrege_africa_data': 'Congo'
+        nice_names = {'audio_moths_sorted_june2019': 'Sabah (Audiomoth)',
+                      'PC_recordings': 'Sabah, MY (Tascam)',
+                      'PC_recordings_nowater': 'Sabah, MY (Tascam) (no water sites)',
+                      'dena_sabah_sorted_data': 'Sabah, MY various sites',
+                      'cornell_sorted_balanced_data': 'Ithaca, USA (summer)',
+                      'cornell_winter_sorted_balanced_data': 'Ithaca, USA (winter)',
+                      'cornell_seasonal_mic': 'Ithaca, USA (all seasons)',
+                      'cornell_nz_data_sorted': 'South Island, NZ',
+                      'sulawesi_sorted_data': 'Sulawesi, ID',
+                      'wrege_africa_data': 'Republic of the Congo'
                       }
 
         if label in nice_names: return nice_names[label]

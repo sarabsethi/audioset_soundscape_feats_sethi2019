@@ -16,10 +16,10 @@ plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
 
 feats = ['raw_audioset_feats_300s','v3_comp_sscape_idx_299s']
-all_plots = [{'title':'New York: biodiversity', 'dts':'cornell_sorted_balanced_data', 'label_type':'land-use-ny'},
-             {'title':'Borneo: AGB', 'dts':'audio_moths_sorted_june2019', 'label_type':'land-use'},
-             {'title':'New York: monthly', 'dts':'strictbal_cornell_seasonal_mic', 'label_type':'monthly'},
-             {'title':'Borneo: hourly', 'dts':'strictbal__specAM-VJR-1audio_moths_sorted_june2019', 'label_type':'hourly'}
+all_plots = [{'title':'Ithaca, USA: biodiversity', 'dts':'cornell_sorted_balanced_data', 'label_type':'land-use-ny'},
+             {'title':'Sabah, MY: AGB', 'dts':'audio_moths_sorted_june2019', 'label_type':'land-use'},
+             {'title':'Ithaca, USA: monthly', 'dts':'strictbal_cornell_seasonal_mic', 'label_type':'monthly'},
+             {'title':'Sabah, MY: hourly', 'dts':'strictbal__specAM-VJR-1audio_moths_sorted_june2019', 'label_type':'hourly'}
              ]
 # How many training test splits - recommend 5
 k_folds = 5
@@ -30,7 +30,7 @@ n_subplots_x = 2
 n_subplots_y = 2
 subplt_idx = 1
 
-fig = plt.figure(figsize=(20,10))
+fig = plt.figure(figsize=(15,10))
 
 for plot in all_plots:
     # Plot predictions
