@@ -11,26 +11,110 @@ from scipy import stats
 from math import log
 from statistics import mean
 from fastcluster import linkage
+from sklearn.svm import SVC
+from sklearn.model_selection import train_test_split,StratifiedShuffleSplit
+from sklearn.metrics import confusion_matrix
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.metrics import balanced_accuracy_score, recall_score
+from tqdm import tqdm
+import calendar
+import collections
+import heapq
+from operator import itemgetter
 
 '''
 This module provides functions to assist with analysis of our data
-
-Functions:
-    get_embedded_data
-    get_audio_mean_data
-    calc_var_info
-    data_variance_explained
-    get_clusters
-    reg_df_col_with_features
-    variation_of_information
-    get_reg_model
-    calc_added_dims_regs
-    compute_serial_matrix
-    seriation
 '''
 
+def least_common_values(array, to_find=None):
+    counter = collections.Counter(array)
+    if to_find is None:
+        return sorted(counter.items(), key=itemgetter(1), reverse=False)
+    return heapq.nsmallest(to_find, counter.items(), key=itemgetter(1))
 
-def get_embedded_data(data,labels,classes,dimred,dims=2,saved_dimred=[]):
+def uniqueify_list(mylist):
+    dups = {}
+
+    for i, val in enumerate(mylist):
+        if val not in dups:
+            # Store index of first occurrence and occurrence value
+            dups[val] = [i, 1]
+        else:
+            # Special case for first occurrence
+            if dups[val][1] == 1:
+                mylist[dups[val][0]] += ' {}'.format(str(dups[val][1]))
+
+            # Increment occurrence value, index value doesn't matter anymore
+            dups[val][1] += 1
+
+            # Use stored occurrence value
+            mylist[i] += ' {}'.format(str(dups[val][1]))
+
+    return mylist
+
+def get_label_order(labels, lab_type):
+    reord = []
+    if 'month' in lab_type:
+        print(labels)
+        reord = [list(calendar.month_abbr).index(c) for c in labels]
+
+    elif 'land-use' in lab_type:
+        reord = np.ones(len(labels))*-1
+        for ix, lb in enumerate(labels):
+            if lb.lower() == 'low': reord[ix] = 0
+            if lb.lower() == 'low-mid': reord[ix] = 1
+            if lb.lower() == 'mid': reord[ix] = 2
+            if lb.lower() == 'mid-high': reord[ix] = 3
+            if lb.lower() == 'high': reord[ix] = 4
+        for ix, r in enumerate(reord):
+            if r == -1: reord[ix] = np.max(reord) + 1
+
+    elif 'dataset' in lab_type:
+        reord = np.ones(len(labels))*-1
+        for ix, lb in enumerate(labels):
+            if 'borneo' in lb.lower() or 'congo' in lb.lower() or 'sulawesi' in lb.lower():
+                reord[ix] = np.max(reord) + 1
+
+        for ix, r in enumerate(reord):
+            if r == -1: reord[ix] = np.max(reord) + 1
+
+    if len(reord) >= 1:
+        reord = [int(i) for i in reord]
+        return np.argsort(reord)
+    else: return range(len(labels))
+
+def change_lab_type(labels,datetimes,recorders,classes,unique_ids,type='dataset'):
+    print(type)
+    lab_list = []
+    for uq_id_idx, uq_id in enumerate(unique_ids):
+        new_l_list = []
+        date = datetimes[uq_id_idx]
+        #print(uq_id.split('_'))
+        if 'date' in type:
+            new_l_list.append(date.strftime('%Y-%m-%d'))
+        elif 'month' in type:
+            new_l_list.append(date.strftime('%b'))
+        elif 'year' in type:
+            new_l_list.append(date.strftime('%Y'))
+        elif 'site' in type:
+            new_l_list.append(recorders[uq_id_idx])
+        elif 'hour' in type:
+            new_l_list.append(date.strftime('%H'))
+        elif 'unq_id' in type:
+            new_l_list.append(uq_id)
+        elif 'dataset' in type:
+            new_l_list.append(get_dataset_from_unq_id(uq_id))
+        elif 'land-use-ny' in type:
+            new_l_list.append(get_land_use_ny_type(recorders[uq_id_idx]))
+        elif 'land-use' in type:
+            new_l_list.append(get_land_use_type(recorders[uq_id_idx]))
+
+        lab_list.append(' '.join(new_l_list))
+
+    new_classes, new_labels = np.unique(lab_list, return_inverse=True)
+    return new_labels, new_classes
+
+def get_embedded_data(data,labels,dimred,dims=2,saved_dimred=[],return_dimred=False):
     """
     Get a low dimensional embedding of audio feature data
 
@@ -41,7 +125,6 @@ def get_embedded_data(data,labels,classes,dimred,dims=2,saved_dimred=[]):
     Args:
         data (ndarray): matrix of audio feature data - rows are observations
         labels (ndarray): labels of each of the observations - integer values
-        classes (ndarray): name of each of the classes (maps labels to strings)
         dimdred (str): method of dimensionality reduction
                        options: umap_clust, umap, umap_default, pca
         dims (int): number of dimensions to embed data into
@@ -72,6 +155,13 @@ def get_embedded_data(data,labels,classes,dimred,dims=2,saved_dimred=[]):
             elif dimred == 'umap_default':
                 # Default UMAP parameters
                 dim_red_obj = umap.UMAP(metric='euclidean', random_state=42, n_components=dims)
+            elif dimred == 'umap_vis':
+                # Parameters for better visualisation (tuned for hourly + seasonal cycles)
+                dim_red_obj = umap.UMAP(metric='euclidean', n_neighbors=300, random_state=42, n_components=dims)
+            elif dimred == 'umap_vis_landuse':
+                # Parameters for better visualisation (tuned for land use)
+                dim_red_obj = umap.UMAP(metric='euclidean', n_neighbors=600, min_dist=0.8, random_state=42, n_components=dims)
+
             elif dimred == 'pca':
                 # Principal Component Analysis
                 dim_red_obj = PCA(n_components=dims)
@@ -94,8 +184,10 @@ def get_embedded_data(data,labels,classes,dimred,dims=2,saved_dimred=[]):
         X_r = dim_red_obj.transform(data_minmax)
         print('X_r: {}'.format(X_r.shape))
 
-        return X_r, labels
-
+        if return_dimred:
+            return X_r, labels, dim_red_obj
+        else:
+            return X_r, labels
 
 def get_audio_mean_data(data,labels,classes):
     """
@@ -152,13 +244,13 @@ def calc_var_info(audio_data, audio_labels, field_df):
 
     # Do clustering of audio data
     audio_clusts, audio_pdist, audio_pdist_labels = get_clusters(audio_data, audio_labels)
-    print('Audio clustering')
-    print(audio_clusts)
+    print('Doing audio clustering')
+    #print(audio_clusts)
 
     # Do clustering of field data
     field_clusts, field_pdist, field_pdist_labels = get_clusters(field_data, field_labels)
-    print('Field data clustering')
-    print(field_clusts)
+    print('Doing field data clustering')
+    #print(field_clusts)
 
     # Calculate variation of information between two clustering outputs
     real_vi = variation_of_information(audio_clusts,field_clusts)
@@ -201,13 +293,14 @@ def data_variance_explained(data):
 
     min_max_scaler = preprocessing.MinMaxScaler()
     data_minmax = min_max_scaler.fit_transform(data)
-    pca_model = PCA(n_components=data_minmax.shape[1])
+
+    comps = np.min(data_minmax.shape)
+    pca_model = PCA(n_components=comps)
     pca_model.fit_transform(data_minmax)
 
     return pca_model.explained_variance_ratio_.cumsum()
 
-
-def get_clusters(data, labels):
+def get_clusters(data, labels, return_ord_idx=False):
     """
     Cluster data using AffinityPropagation clustering
 
@@ -242,7 +335,135 @@ def get_clusters(data, labels):
     ordered_pdist = ordered_pdist[:,pdist_order]
     ordered_labels = labels[pdist_order]
 
-    return clusts, ordered_pdist, ordered_labels
+    if return_ord_idx:
+        return clusts, ordered_pdist, ordered_labels, pdist_order
+    else:
+        return clusts, ordered_pdist, ordered_labels
+
+
+def get_dataset_from_unq_id(unq_id):
+    datasets = ['audio_moths_sorted_june2019','wrege_africa_data','cornell_nz_data_sorted','PC_recordings','sulawesi_sorted_data','cornell_seasonal_mic','cornell_sorted_balanced_data','cornell_winter_sorted_balanced_data','dena_sabah_sorted_data']
+
+    for dt in datasets:
+        if dt in unq_id: return dt
+
+    return 'Unrecognised dataset'
+
+
+def get_land_use_type(rec):
+
+    if 'AM ' in rec: rec = rec[3:]
+    if rec in ['OP Belian', 'OP3 843', 'C Matrix', 'D Matrix', 'E1 651'] or rec in ['C_Matrix','D_Matrix']:
+        return 'Low'
+    elif rec in ['E10 654', 'E matrix 647', 'E100 658', 'E1 648'] or rec in ['E1']:
+        return 'Low-mid'
+    elif rec in ['D100 641', 'E100 edge', 'C10 621', 'D10 639'] or rec in ['E100', 'D100']:
+        return 'Mid'
+    elif rec in ['D1 634', 'D100 643', 'B10', 'B matrix 599'] or rec in ['B10']:
+        return 'Mid-high'
+    elif rec in ['VJR 1', 'VJR 2', 'LFE 703', 'LFE 705'] or rec in ['VJR1','VJR2']:
+        return 'High'
+    elif 'Riparian' in rec or 'B1 602' in rec or rec in ['Riparian_2','B1']:
+        return 'River'
+    else:
+        return rec
+    '''
+
+    rec = rec.lower()
+    if 'op' in rec or 'matrix' in rec:
+        return 'Low AGB'
+    elif 'vjr' in rec or 'lfe' in rec:
+        return 'High AGB'
+    elif 'riparian' in rec or 'b1 602' in rec:
+        return 'Water'
+    else:
+        return 'Mid AGB'
+    '''
+
+def get_land_use_ny_type(rec):
+    rec_low = rec.lower()
+    rec_num = int(rec_low[1:])
+
+    low_alpha = [26,27,13,19,29,16]
+    low_mid_alpha = [20,12,14,25,30]
+    mid_alpha = [2,3,7,28,22,1]
+    mid_high_alpha = [23,9,21,5,24,10]
+    high_alpha = [6,17,4,18,11,8,15]
+
+    if rec_num in low_alpha:
+        return 'Low'
+    elif rec_num in low_mid_alpha:
+        return 'Low-mid'
+    elif rec_num in mid_alpha :
+        return 'Mid'
+    elif rec_num in mid_high_alpha:
+        return 'Mid-high'
+    elif rec_num in high_alpha:
+        return 'High'
+    else:
+        return rec
+
+def get_special_labels(datetimes, recorders, unq_labels, type='hourly'):
+    if type == 'hourly':
+        labels = ['{}:00'.format(str(d.hour).zfill(2)) for d in datetimes]
+    elif type == 'monthly':
+        labels = [calendar.month_abbr[d.month] for d in datetimes]
+    elif type == 'site':
+        labels = recorders
+    elif type == 'land-use':
+        labels = [get_land_use_type(rec) for rec in recorders]
+    elif type == 'land-use-ny':
+        labels = [get_land_use_ny_type(rec) for rec in recorders]
+    elif type == 'dataset':
+        labels = [get_dataset_from_unq_id(unq_id) for unq_id in unq_labels]
+    else:
+        raise Exception('Don\'t understand type: {}'.format(type))
+
+    return labels
+
+def multi_class_classification(X, y, k_fold = 5):
+    X = np.asarray(X)
+    y = np.asarray(y)
+
+    # dividing X, y into train and test data
+    sss = StratifiedShuffleSplit(n_splits=k_fold, test_size=0.2, random_state=0)
+    #sss.get_n_splits(X, y)
+
+    all_accuracies = []
+    all_cms = []
+    all_recalls = []
+    print('Doing {} fold cross validation predictions. Classes: {}'.format(k_fold,np.unique(y)))
+    for k, (train_index, test_index) in enumerate(sss.split(X, y)):
+        X_train, X_test = X[train_index], X[test_index]
+        y_train, y_test = y[train_index], y[test_index]
+
+        # training a classifier
+        clf = RandomForestClassifier(random_state=0, n_estimators=100)
+        clf.fit(X_train, y_train)
+
+        # print('Training classifier: X_train {}, X_test {}, y_train {}, y_test {}'.format(len(X_train), len(X_test), len(y_train), len(y_test)))
+        predictions = clf.predict(X_test)
+
+        # model accuracy for X_test
+        k_accuracy = balanced_accuracy_score(y_test, predictions)
+
+        print('{}/{} folds accuracy: {}'.format(k+1,k_fold,k_accuracy))
+        all_recalls.append(recall_score(y_test,predictions,average=None))
+        all_accuracies.append(k_accuracy)
+
+        cm_labels = np.unique(y)
+        k_cm = confusion_matrix(y_test, predictions, labels=cm_labels)
+        all_cms.append(k_cm)
+
+    accuracy = np.mean(all_accuracies)
+    print('Average accuracy = {}'.format(accuracy))
+
+    recalls = np.mean(np.asarray(all_recalls),axis=0)
+
+    print(np.asarray(all_cms).shape)
+    cm = np.mean(np.asarray(all_cms),axis=0)
+
+    return cm, cm_labels, accuracy, recalls
 
 
 def reg_df_col_with_features(df, col, audio_mean_data, audio_classes, exclude_labs='', just_model=False):
@@ -282,6 +503,7 @@ def reg_df_col_with_features(df, col, audio_mean_data, audio_classes, exclude_la
     # Match labels between audio and field data
     for fidx, fl in enumerate(df_labels):
         for aidx, al in enumerate(audio_classes):
+            if al.startswith('AM '): al = al.split('AM ')[1]
             if fl == al and fl not in exclude_labs:
                 reorder_audio.append(aidx)
                 reorder_field.append(fidx)
@@ -291,7 +513,14 @@ def reg_df_col_with_features(df, col, audio_mean_data, audio_classes, exclude_la
     reordered_df_labels = df_labels[reorder_field]
     reordered_df_data = df_data[reorder_field]
     # Make sure they really are matched!
-    assert reordered_df_labels.tolist() == reordered_audio_classes.tolist()
+
+    for df_idx, df_lab in enumerate(reordered_df_labels.tolist()):
+        audio_lab = reordered_audio_classes.tolist()[df_idx]
+        if audio_lab.startswith('AM '): audio_lab = audio_lab.split('AM ')[1]
+        assert(df_lab == audio_lab)
+    #print(reordered_df_labels.tolist())
+    #print(reordered_audio_classes.tolist())
+    #assert reordered_df_labels.tolist() == reordered_audio_classes.tolist()
 
     # Fit regression model to all data
     full_reg_model = get_reg_model().fit(reordered_audio_data, reordered_df_data)
@@ -350,7 +579,7 @@ def reg_df_col_with_features(df, col, audio_mean_data, audio_classes, exclude_la
     fisher_stat,combined_p = stats.combine_pvalues(p_vals_list)
     if combined_p > 1: combined_p = 1
 
-    print('Leave one out CV: {} regression score: {}, p = {}'.format(col,round(mean(reg_scores_list),3),round(combined_p,3)))
+    tqdm.write('Leave one out CV: {} regression score: {}, p = {}'.format(col,round(mean(reg_scores_list),3),round(combined_p,3)))
 
     mean_score = mean(reg_scores_list)
     return mean_score, combined_p, full_reg_model, full_mean_err, reordered_audio_data, reordered_df_data, reordered_df_labels
@@ -374,6 +603,13 @@ def variation_of_information(X, Y):
     Returns:
         variation of information between two clusterings of same data points
     """
+    for ix, x in enumerate(X):
+        for _ix, _x in enumerate(x):
+            if _x.startswith('AM '): X[ix][_ix] = _x.split('AM ')[1]
+    for iy, y in enumerate(Y):
+        for _iy, _y in enumerate(y):
+            if _y.startswith('AM '): Y[iy][_iy] = _y.split('AM ')[1]
+
     n = float(sum([len(x) for x in X]))
     sigma = 0.0
     for x in X:
@@ -392,9 +628,9 @@ def get_reg_model():
     Returns:
         scipy regression model
     '''
-    #return RandomForestRegressor(random_state=42)
-    return linear_model.LinearRegression()
-    #return linear_model.RANSACRegressor()
+    return RandomForestRegressor(random_state=42)
+    #return linear_model.LinearRegression()
+    #return linear_model.RANSACRegressor(random_state=12)
 
 def calc_added_dims_regs(audio_mean_data, audio_classes, df, col, max_n_steps=9999):
     """
@@ -421,13 +657,14 @@ def calc_added_dims_regs(audio_mean_data, audio_classes, df, col, max_n_steps=99
     pvals = []
     dims_x = []
 
-    max_dims = np.min([n_feats+1,audio_mean_data.shape[0]+2])
+    max_dims = np.min([n_feats+1,audio_mean_data.shape[0]-1])
     step = np.max([int((max_dims) / max_n_steps),1])
     flat_count = 0
 
     # Loop through the dimensions we want to test regressions at
-    for _dim in range(1,max_dims,step):
-        print('Regression for {} dimensions'.format(_dim))
+    steps =  range(1,max_dims,step)
+    for _dim in tqdm(steps):
+        tqdm.write('Regression for {} dimensions'.format(_dim))
         audio_mean_data_reduced = audio_mean_data[:,:_dim]
 
         r_score, pval,_,_,_,_,_ = reg_df_col_with_features(df, col, audio_mean_data_reduced, audio_classes)
