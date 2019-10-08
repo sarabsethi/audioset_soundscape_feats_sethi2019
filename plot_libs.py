@@ -19,19 +19,105 @@ import calendar
 
 '''
 This module provides functions to assist with plotting our data
-
-Dictionaries:
-    get_feats_nice_name
-
-Functions:
-    get_label_colour
-    get_site_pt_size_and_style
-    get_dimred_nice_name
-    smooth_density_curve
-    plot_low_dim_space
-    plot_pdist_clusts
-    plot_regr_dims
 '''
+
+
+def plot_low_dim_space(embedded_data,labels,classes,dimred,label_type,plot_scale=1.0):
+    dims = embedded_data.shape[1]
+
+    colour_indexes_ndarray = labels
+    print('colour_indexes_ndarray: {}'.format(colour_indexes_ndarray.shape))
+
+    if label_type == 'dataset':
+        cmap = matplotlib.cm.get_cmap('tab20')
+        norm = matplotlib.colors.Normalize(vmin=0, vmax=np.max(labels))
+        pt_colors = cmap(norm(labels))
+        pt_colors = [lighten_color(c,1.2) for c in pt_colors]
+    else:
+        pt_colors = []
+        for lab in labels:
+            pt_colors.append(get_label_colour(classes[lab],label_type))
+
+    dimred_title = get_dimred_nice_name(dimred)
+
+    # Loop through classes
+    nice_classes = [get_label_nice_name(c, label_type) for c in classes]
+    nice_classes = uniqueify_list(nice_classes)
+    print(nice_classes)
+
+    pt_alpha = 1
+    pt_sz = 1
+    mean_sz = 100
+    mrkr = 'o'
+
+    for i,unique_rec in enumerate(classes):
+        rec_indices = np.where(labels == i)[0] # Rows of data belonging to this class
+
+        x_data = embedded_data[rec_indices,0]
+        y_data = embedded_data[rec_indices,1]
+        x_mean = np.mean(x_data)
+        y_mean = np.mean(y_data)
+
+        # Different datasets have different amount of points, so got to tweak alpha to make them look nice
+        pt_alpha = 0.2
+        if 'month' in label_type:
+            pt_alpha = 0.1
+        if 'dataset' in label_type:
+            pt_alpha = 0.5
+            pt_sz = 5
+
+        lab_name = get_label_nice_name(classes[i],label_type)
+        plt.scatter(x_data,y_data,color=pt_colors[rec_indices[0]],s=pt_sz*plot_scale,alpha=pt_alpha,marker=mrkr,zorder=1,label=lab_name)
+        plt.scatter(x_mean,y_mean,color=pt_colors[rec_indices[0]],alpha=1,marker=mrkr,s=mean_sz*plot_scale,edgecolors='white',zorder=3)
+
+        plt.xlabel('{}: Dim 1'.format(dimred_title))
+        plt.ylabel('{}: Dim 2'.format(dimred_title))
+
+    # Order legend and only show 1 of every_n labels
+    lg_handles, lg_labels = plt.gca().get_legend_handles_labels()
+    order = get_label_order(lg_labels,label_type)
+
+    every_n = 1
+    if 'month' in label_type: every_n = 2
+    elif 'hour' in label_type: every_n = 3
+    m_loc = 'upper left'
+    lgnd = plt.legend([lg_handles[idx] for _i, idx in enumerate(order) if _i % every_n == 0],[lg_labels[idx] for _i, idx in enumerate(order) if _i % every_n == 0], loc=m_loc)
+    for i in range(len(lgnd.legendHandles)):
+        lgnd.legendHandles[i]._sizes = [30]
+        lgnd.legendHandles[i].set_alpha(1)
+
+    # Sort out axis labels
+    ax = plt.gca()
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.xaxis.set_ticklabels([])
+    ax.yaxis.set_ticklabels([])
+    plt.xticks([])
+    plt.yticks([])
+
+def plot_multi_class_recalls(recalls, labels, average_accuracy, label_type, feat):
+    if 'audioset' in feat: c = 'r'
+    elif 'sscape' in feat: c = 'b'
+    else: c = 'k'
+
+    order = get_label_order(labels,label_type)
+    recalls = np.asarray(recalls)
+    recalls = recalls[order]
+    labels = labels[order]
+
+    plt.plot(recalls,c=c)
+    ax = plt.gca()
+    ax.axhline(y=average_accuracy,linestyle='--',c=c)
+    ax.xaxis.set_ticks(range(len(labels)))
+    ax.xaxis.set_ticklabels(labels)
+
+    if 'hour' in label_type:
+        ax.xaxis.set_ticks(ax.get_xticks()[::3])
+        ax.xaxis.set_ticklabels(labels[::3])
+    elif 'month' in label_type:
+        ax.xaxis.set_ticks(ax.get_xticks()[::2])
+        ax.xaxis.set_ticklabels(labels[::2])
+
 
 # Plots an image at each x and y location.
 def plot_image(xData, yData, im, scale=0.5):
@@ -397,153 +483,6 @@ def plot_playback_exp(gmm_model, feat, af_data, labs, site, site_playback_files,
     plt.xticks([],[])
     plt.xticks([1,20,100],['1','20','100'])
 
-
-def plot_low_dim_space(embedded_data,labels,classes,plt_title,dimred,agb_df=None,unique_ids=[],label_type=[],mins_per_feat=20,plot_scale=1.0,show_ellipses=False,use_legend=False):
-    """
-    Plot low-dimensional representation of embedded data
-
-    Once high dimensional data has been embedded into some sensible embedding where
-    dimensions are ordered, here we plot the first 2 dimensions. If data only has
-    1 dimension a smoothed density distribution is plotted
-
-    Args:
-        embedded_data (ndarray): embedded feature data - rows are observations
-        labels (ndarray): labels of embedded_data rows
-        classes (ndarray): names of classes corresponding to labels
-        plt_title (str): title of plot
-        dimred (str): Dimensionality reduction technique used (for axis titles)
-        agb_df (pandas.DataFrame): agb dataframe
-        unique_ids (ndarray): unique IDs of each point for hover text
-        label_type (str): label type of data
-        mins_per_feat (float): minutes of audio per observation in embedded_data
-    """
-
-    dims = embedded_data.shape[1]
-
-    if not unique_ids:
-        unique_ids = np.asarray([''] * embedded_data.shape[0])
-
-    colour_indexes_ndarray = labels
-    print('colour_indexes_ndarray: {}'.format(colour_indexes_ndarray.shape))
-
-    # Use a circular colourmap for when we are colouring points by time
-    if label_type and label_type.strip() != '' and label_type != 'dataset':
-        pt_colors = []
-        for lab in labels:
-            pt_colors.append(get_label_colour(classes[lab],label_type))
-    else:
-        cmap = matplotlib.cm.get_cmap('tab20')
-        norm = matplotlib.colors.Normalize(vmin=0, vmax=np.max(labels))
-        pt_colors = cmap(norm(labels))
-        pt_colors = [lighten_color(c,1.2) for c in pt_colors]
-
-        #normalised = (colour_indexes_ndarray-np.min(colour_indexes_ndarray))/(np.max(colour_indexes_ndarray)-np.min(colour_indexes_ndarray))
-        #pt_colors = plt.cm.brg(normalised)
-
-    # Get legend entries which include sampling effort per class
-    class_labels = []
-    for i, c in enumerate(classes):
-        #rec_indices = np.where(labels == i)[0]
-        #class_labels.append('{} (N={} hrs)'.format(classes[i],round(len(rec_indices) * (mins_per_feat/60), 1)))
-        class_labels.append('{}'.format(classes[i]))
-
-    dimred_title = get_dimred_nice_name(dimred)
-
-    # Loop through classes
-    nice_classes = [get_label_nice_name(c, label_type) for c in classes]
-    nice_classes = uniqueify_list(nice_classes)
-    print(nice_classes)
-
-
-    for i,unique_rec in enumerate(classes):
-        rec_indices = np.where(labels == i)[0] # Rows of data belonging to this class
-        if len(rec_indices) == 0:
-            print('No indices found for {}'.format(unique_rec))
-            continue
-        # If high dimensional, scatter first two dimensions. For 1D data plot a
-        # smoothed density distribution
-        if dims >= 2: # High dimensional data
-            if label_type:
-                sz = 100
-                c = nice_classes[i].lower()
-                if False and (label_type == 'dataset' and ('borneo' in c or 'congo' in c or 'sulawesi' in c)):
-                    mrkr = '^'
-                elif label_type == 'land-use' and ('river' in c or 'water' in c):
-                    mrkr = '^'
-                else:
-                    mrkr = 'o'
-            else:
-                sz, mrkr = get_site_pt_size_and_style(classes[i], agb_df)
-
-            x_data = embedded_data[rec_indices,0]
-            y_data = embedded_data[rec_indices,1]
-            x_mean = np.mean(x_data)
-            y_mean = np.mean(y_data)
-
-            pt_alpha = 1
-            if not use_legend:
-                plt.text(x_mean+0.1,y_mean,nice_classes[i],color=pt_colors[rec_indices[0]])
-                pt_alpha = 0.06
-                if len(embedded_data) > 10000: pt_alpha = 0.02
-
-            pt_sz = 1
-
-            lab_name = get_label_nice_name(class_labels[i],label_type)
-            if 'land-use' in label_type and 'river' not in lab_name.lower() and 'water' not in lab_name.lower(): lab_name = '{} AGB'.format(lab_name)
-
-            show_means = False
-            if 'month' in label_type or 'hour' in label_type or 'dataset' in label_type or not use_legend:
-                pt_alpha = 0.3
-                show_means = True
-            if 'month' in label_type:
-                pt_alpha = 0.1
-            if 'dataset' in label_type:
-                pt_alpha = 0.5
-                pt_sz = 5
-
-            plt.scatter(x_data,y_data,color=pt_colors[rec_indices[0]],s=pt_sz*plot_scale,alpha=pt_alpha,marker=mrkr,zorder=1,gid=unique_ids[rec_indices],label=lab_name)
-            if show_means:
-                plt.scatter(x_mean,y_mean,color=pt_colors[rec_indices[0]],alpha=1,marker=mrkr,s=sz*plot_scale,edgecolors='white',zorder=3)
-
-            if len(rec_indices) > 1 and show_ellipses:
-                points = embedded_data[rec_indices,:]
-                plot_point_cov(points, nstd=1.4, alpha=0.2, color=pt_colors[rec_indices[0]])
-
-            plt.xlabel('{}: Dim 1'.format(dimred_title))
-            plt.ylabel('{}: Dim 2'.format(dimred_title))
-
-            #plt.errorbar(x_mean, y_mean,color=pt_colors[rec_indices[0]],xerr=np.std(x_data),yerr=np.std(y_data),zorder=2)
-
-        elif dims == 1: # 1D data
-            embedded_data = embedded_data.flatten()
-            x, p = smooth_density_curve(embedded_data[rec_indices,0])
-            plt.plot(x,p,color=pt_colors[rec_indices[0]],label=class_labels[i])
-
-    lg_handles, lg_labels = plt.gca().get_legend_handles_labels()
-    order = get_label_order([l.split(' ')[0] for l in lg_labels],label_type)
-
-    every_n = 1
-    if 'month' in label_type:
-        every_n = 2
-    elif 'hour' in label_type:
-        every_n = 3
-
-    m_loc = 'upper left'
-
-    lgnd = plt.legend([lg_handles[idx] for _i, idx in enumerate(order) if _i % every_n == 0],[lg_labels[idx] for _i, idx in enumerate(order) if _i % every_n == 0], loc=m_loc)
-    for i in range(len(lgnd.legendHandles)):
-        lgnd.legendHandles[i]._sizes = [30]
-        lgnd.legendHandles[i].set_alpha(1)
-
-    plt.title(plt_title)
-
-    ax = plt.gca()
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.xaxis.set_ticklabels([])
-    ax.yaxis.set_ticklabels([])
-    plt.xticks([])
-    plt.yticks([])
 
 def plot_safe_field_agb_comparison(field_df, agb_df, text_annot=True):
     print(field_df)

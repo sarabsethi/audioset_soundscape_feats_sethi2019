@@ -19,11 +19,10 @@ plot_scale = 1.3
 matplotlib.rcParams.update({'font.size': 16})
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
+plt.rc('legend',fontsize='smaller')
 
 # Feature sets and dimensionality reduction techniques to test
 feats = ['raw_audioset_feats_300s']
-
-
 all_plots = [{'title': 'Global', 'dts_name':'cornell_sorted_balanced_data+audio_moths_sorted_june2019+cornell_seasonal_mic+PC_recordings+sulawesi_sorted_data+wrege_africa_data+cornell_nz_data_sorted', 'label_type':'dataset', 'dimred':'umap_vis'},
             {'title': 'Borneo land-use', 'dts_name':'audio_moths_sorted_june2019', 'label_type':'land-use', 'dimred':'umap_vis_landuse'},
             {'title': 'New York seasonal', 'dts_name':'strictbal_cornell_seasonal_mic', 'label_type':'month', 'dimred':'umap_vis'},
@@ -36,7 +35,6 @@ n_subplots_x = np.min([len(all_plots),2])
 n_subplots_y = np.ceil(len(all_plots) / n_subplots_x)
 subplt_idx = 1
 fig = plt.figure(figsize=((fig_s+1)*(n_subplots_x),fig_s*n_subplots_y))
-plt.rc('legend',fontsize='smaller') # using a named size
 
 for pl in all_plots:
 
@@ -60,9 +58,9 @@ for pl in all_plots:
         fig.add_subplot(n_subplots_y,n_subplots_x,subplt_idx)
         subplt_idx+=1
         plot_low_dim_space(data_red, data_red_labels, classes=classes,
-            plt_title=pl['title'], mins_per_feat=mins_per_feat, dimred=pl['dimred'],
-            plot_scale=plot_scale, label_type=pl['label_type'], use_legend=True)
-
+                           dimred=pl['dimred'], plot_scale=plot_scale,
+                           label_type=pl['label_type'])
+        plt.title(pl['title'])
 
 plt.tight_layout()
 fig_savefile = os.path.join('figs','scatter.pdf')

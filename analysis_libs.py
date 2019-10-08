@@ -53,12 +53,14 @@ def uniqueify_list(mylist):
     return mylist
 
 def get_label_order(labels, lab_type):
+
     reord = []
     if 'month' in lab_type:
         print(labels)
         reord = [list(calendar.month_abbr).index(c) for c in labels]
 
     elif 'land-use' in lab_type:
+        labels = [l.split(' ')[0] for l in labels]
         reord = np.ones(len(labels))*-1
         for ix, lb in enumerate(labels):
             if lb.lower() == 'low': reord[ix] = 0
@@ -457,10 +459,7 @@ def multi_class_classification(X, y, k_fold = 5):
 
     accuracy = np.mean(all_accuracies)
     print('Average accuracy = {}'.format(accuracy))
-
     recalls = np.mean(np.asarray(all_recalls),axis=0)
-
-    print(np.asarray(all_cms).shape)
     cm = np.mean(np.asarray(all_cms),axis=0)
 
     return cm, cm_labels, accuracy, recalls
