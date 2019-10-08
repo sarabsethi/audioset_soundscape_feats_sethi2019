@@ -112,7 +112,7 @@ def plot_multi_class_recalls(recalls, labels, average_accuracy, label_type, feat
     plt.plot(recalls,c=c)
     ax = plt.gca()
     ax.axhline(y=average_accuracy,linestyle='--',c=c)
-    plt.text(0,average_accuracy,'{}%%'.format(np.round(average_accuracy,2)),color=c)
+    plt.text(0.1,average_accuracy+1,'{}%'.format(np.round(average_accuracy,1)),color=c)
     ax.xaxis.set_ticks(range(len(labels)))
     ax.xaxis.set_ticklabels(labels)
 

@@ -25,12 +25,11 @@ all_plots = [{'title':'Ithaca, USA: biodiversity', 'dts':'cornell_sorted_balance
 k_folds = 5
 
 # Figure setup
-fig_s = 6
 n_subplots_x = 2
 n_subplots_y = 2
 subplt_idx = 1
 
-fig = plt.figure(figsize=(15,10))
+fig = plt.figure(figsize=(18,10))
 
 for plot in all_plots:
     # Plot predictions
@@ -47,6 +46,9 @@ for plot in all_plots:
 
         plot_multi_class_recalls(recalls, cm_labs, acc, plot['label_type'], f)
         plt.title(plot['title'])
+
+    if subplt_idx == 2 or subplt_idx == 4:
+        plt.ylabel('Recall (percentage)')
 
 plt.tight_layout()
 fig_savefile = os.path.join('figs','multiclass.pdf')
