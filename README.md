@@ -2,7 +2,7 @@
 Reproducability code for Sethi et. al. 2019 (in prep.)
 
 ## Setup
-Audio feature data is stored in pickle format in `data/data_zipped.7z` - unzip this file and move the contents to the `data` directory
+Audio feature data is stored in pickle format - we use Git LFS
 
 ## Usage
 * Scripts `figure_....py` reproduce figures
