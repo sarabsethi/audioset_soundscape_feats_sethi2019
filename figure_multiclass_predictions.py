@@ -22,7 +22,7 @@ all_plots = [{'title':'Ithaca, USA: biodiversity', 'dts':'cornell_sorted_balance
              {'title':'Sabah, MY: hourly', 'dts':'strictbal__specAM-VJR-1audio_moths_sorted_june2019', 'label_type':'hourly'}
              ]
 # How many training test splits - recommend 5
-k_folds = 5
+k_folds = 1
 
 # Figure setup
 n_subplots_x = 2
