@@ -21,6 +21,7 @@ import calendar
 import collections
 import heapq
 from operator import itemgetter
+from imblearn.under_sampling import RandomUnderSampler
 
 '''
 This module provides functions to assist with analysis of our data
@@ -116,7 +117,7 @@ def change_lab_type(labels,datetimes,recorders,classes,unique_ids,type='dataset'
     new_classes, new_labels = np.unique(lab_list, return_inverse=True)
     return new_labels, new_classes
 
-def get_embedded_data(data,labels,dimred,dims=2,saved_dimred=[],return_dimred=False):
+def get_embedded_data(data,labels,dimred,dims=2,return_dimred=False,balance_before=False):
     """
     Get a low dimensional embedding of audio feature data
 
@@ -130,7 +131,6 @@ def get_embedded_data(data,labels,dimred,dims=2,saved_dimred=[],return_dimred=Fa
         dimdred (str): method of dimensionality reduction
                        options: umap_clust, umap, umap_default, pca
         dims (int): number of dimensions to embed data into
-        saved_dimred (str): filename of saved embedding
 
     Returns:
         X_r (ndarray): embedded data
@@ -147,41 +147,44 @@ def get_embedded_data(data,labels,dimred,dims=2,saved_dimred=[],return_dimred=Fa
         dim_red_obj = None
         print(dimred)
 
-        if (not saved_dimred) or (not os.path.exists(saved_dimred)):
-            if dimred == 'umap':
-                # These are parameters for best clustering - lots of epochs takes a while
-                dim_red_obj = umap.UMAP(metric='euclidean', min_dist=0, n_neighbors=50, n_epochs=10000, random_state=42, n_components=dims)
-            elif dimred == 'umap_clust':
-                # Same as above but fewer epochs
-                dim_red_obj = umap.UMAP(metric='euclidean', min_dist=0, n_neighbors=50, random_state=42, n_components=dims)
-            elif dimred == 'umap_default':
-                # Default UMAP parameters
-                dim_red_obj = umap.UMAP(metric='euclidean', random_state=42, n_components=dims)
-            elif dimred == 'umap_vis':
-                # Parameters for better visualisation (tuned for hourly + seasonal cycles)
-                dim_red_obj = umap.UMAP(metric='euclidean', n_neighbors=300, random_state=42, n_components=dims)
-            elif dimred == 'umap_vis_landuse':
-                # Parameters for better visualisation (tuned for land use)
-                dim_red_obj = umap.UMAP(metric='euclidean', n_neighbors=600, min_dist=0.8, random_state=42, n_components=dims)
+        if dimred == 'umap':
+            # These are parameters for best clustering - lots of epochs takes a while
+            dim_red_obj = umap.UMAP(metric='euclidean', min_dist=0, n_neighbors=50, n_epochs=10000, random_state=42, n_components=dims)
+        elif dimred == 'umap_clust':
+            # Same as above but fewer epochs
+            dim_red_obj = umap.UMAP(metric='euclidean', min_dist=0, n_neighbors=50, random_state=42, n_components=dims)
+        elif dimred == 'umap_default':
+            # Default UMAP parameters
+            dim_red_obj = umap.UMAP(metric='euclidean', random_state=42, n_components=dims)
+        elif dimred == 'umap_vis':
+            # Parameters for better visualisation (tuned for hourly + seasonal cycles)
+            dim_red_obj = umap.UMAP(metric='euclidean', n_neighbors=300, random_state=42, n_components=dims)
+        elif dimred == 'umap_vis_landuse':
+            # Parameters for better visualisation (tuned for land use)
+            dim_red_obj = umap.UMAP(metric='euclidean', n_neighbors=600, min_dist=0.8, random_state=42, n_components=dims)
 
-            elif dimred == 'pca':
-                # Principal Component Analysis
-                dim_red_obj = PCA(n_components=dims)
-            else:
-                print('Unrecognised dimensionality reduction dimred: {}. Returning raw data'.format(dimred))
-                return data, labels
-
-            print('Normalising features to [0,1] before dimensionality reduction using {}'.format(dimred))
-            min_max_scaler = preprocessing.MinMaxScaler()
-            data_minmax = min_max_scaler.fit_transform(data)
-
-            print('Computing dimensionality reduction projection from data')
-            dim_red_obj.fit(data_minmax)
-            if saved_dimred:
-                pickle.dump(dim_red_obj, open(saved_dimred, 'wb'))
+        elif dimred == 'pca':
+            # Principal Component Analysis
+            dim_red_obj = PCA(n_components=dims)
         else:
-            print('Loading dimensionality reduction projection from file: {}'.format(saved_dimred))
-            dim_red_obj = pickle.load(open(saved_dimred, 'rb'))
+            print('Unrecognised dimensionality reduction dimred: {}. Returning raw data'.format(dimred))
+            return data, labels
+
+        print('Normalising features to [0,1] before dimensionality reduction using {}'.format(dimred))
+        min_max_scaler = preprocessing.MinMaxScaler()
+        data_minmax = min_max_scaler.fit_transform(data)
+
+        print('Computing dimensionality reduction projection from data')
+
+        if balance_before:
+            print('Rebalancing classes before dimred')
+            print(data_minmax.shape)
+            rus = RandomUnderSampler(random_state=42)
+            data_minmax_bal, labels_bal = rus.fit_sample(data_minmax, labels)
+            print('Balanced shape {}'.format(data_minmax_bal.shape))
+            dim_red_obj.fit(data_minmax_bal)
+        else:
+            dim_red_obj.fit(data_minmax)
 
         X_r = dim_red_obj.transform(data_minmax)
         print('X_r: {}'.format(X_r.shape))

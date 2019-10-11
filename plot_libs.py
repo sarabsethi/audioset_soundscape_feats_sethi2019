@@ -62,9 +62,9 @@ def plot_low_dim_space(embedded_data,labels,classes,dimred,label_type,plot_scale
         pt_alpha = 0.2
         if 'month' in label_type:
             pt_alpha = 0.1
-        if 'dataset' in label_type:
-            pt_alpha = 0.5
-            pt_sz = 5
+        #if 'dataset' in label_type:
+            #pt_alpha = 0.5
+            #pt_sz = 5
 
         lab_name = get_label_nice_name(classes[i],label_type)
         plt.scatter(x_data,y_data,color=pt_colors[rec_indices[0]],s=pt_sz*plot_scale,alpha=pt_alpha,marker=mrkr,zorder=1,label=lab_name)
@@ -80,7 +80,7 @@ def plot_low_dim_space(embedded_data,labels,classes,dimred,label_type,plot_scale
     every_n = 1
     if 'month' in label_type: every_n = 2
     elif 'hour' in label_type: every_n = 3
-    m_loc = 'upper left'
+    m_loc = 'upper right'
     lgnd = plt.legend([lg_handles[idx] for _i, idx in enumerate(order) if _i % every_n == 0],[lg_labels[idx] for _i, idx in enumerate(order) if _i % every_n == 0], loc=m_loc)
     for i in range(len(lgnd.legendHandles)):
         lgnd.legendHandles[i]._sizes = [30]

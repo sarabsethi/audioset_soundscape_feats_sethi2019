@@ -6,7 +6,6 @@ import pickle
 import os
 import numpy as np
 import matplotlib
-from imblearn.under_sampling import RandomUnderSampler
 
 '''
 Unsupervised dimensionality reduction of eco-acoustic features
@@ -44,15 +43,11 @@ for pl in all_plots:
             audio_feats_data, labels, datetimes, recorders, unique_ids, classes, mins_per_feat = pickle.load(savef)
             labels, classes = change_lab_type(labels,datetimes,recorders,classes,unique_ids,type=pl['label_type'])
 
-        if pl['label_type'] == 'dataset':
-            print(least_common_values(classes[labels]))
-            print('Orig shape {}'.format(audio_feats_data.shape))
-            rus = RandomUnderSampler(random_state=42)
-            audio_feats_data, labels = rus.fit_sample(audio_feats_data, labels)
-            print('Bal shape {}'.format(audio_feats_data.shape))
-
         # Embed data using UMAP or PCA
-        data_red, data_red_labels = get_embedded_data(data=audio_feats_data,labels=labels,dimred=pl['dimred'])
+        if 'dataset' in pl['label_type']: balance_before = True
+        else: balance_before = False
+
+        data_red, data_red_labels = get_embedded_data(data=audio_feats_data,labels=labels,dimred=pl['dimred'],balance_before=balance_before)
 
         # Plot embedded data
         fig.add_subplot(n_subplots_y,n_subplots_x,subplt_idx)

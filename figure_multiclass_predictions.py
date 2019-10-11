@@ -22,7 +22,7 @@ all_plots = [{'title':'Ithaca, USA: biodiversity', 'dts':'cornell_sorted_balance
              {'title':'Sabah, MY: hourly', 'dts':'strictbal__specAM-VJR-1audio_moths_sorted_june2019', 'label_type':'hourly'}
              ]
 # How many training test splits - recommend 5
-k_folds = 1
+k_folds = 5
 
 # Figure setup
 n_subplots_x = 2
@@ -36,6 +36,8 @@ for plot in all_plots:
     fig.add_subplot(n_subplots_y,n_subplots_x,subplt_idx)
     subplt_idx += 1
 
+    ax = plt.gca()
+
     for f in feats:
         # Load data from pickle files
         with open(os.path.join('data','{}_{}.pickle'.format(plot['dts'],f)), 'rb') as savef:
@@ -45,10 +47,11 @@ for plot in all_plots:
         cm, cm_labs, acc, recalls = multi_class_classification(audio_feats_data, new_labels, k_fold=k_folds)
 
         plot_multi_class_recalls(recalls, cm_labs, acc, plot['label_type'], f)
-        plt.title(plot['title'])
+        ax.set_title(plot['title'])
 
     if subplt_idx == 2 or subplt_idx == 4:
-        plt.ylabel('Recall (percentage)')
+        ax.set_ylabel('Recall (percentage)')
+
 
 plt.tight_layout()
 fig_savefile = os.path.join('figs','multiclass.pdf')
