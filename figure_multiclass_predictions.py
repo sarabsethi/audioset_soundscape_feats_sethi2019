@@ -54,7 +54,7 @@ for plot in all_plots:
 
 
 plt.tight_layout()
-fig_savefile = os.path.join('figs','multiclass.pdf')
-plt.savefig(fig_savefile, format="pdf")
+fig_savefile = os.path.join('figs','multiclass.svg')
+plt.savefig(fig_savefile, format="svg")
 
 plt.show()

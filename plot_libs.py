@@ -78,10 +78,15 @@ def plot_low_dim_space(embedded_data,labels,classes,dimred,label_type,plot_scale
     order = get_label_order(lg_labels,label_type)
 
     every_n = 1
-    if 'month' in label_type: every_n = 2
-    elif 'hour' in label_type: every_n = 3
+    ncol = 1
+    if 'month' in label_type:
+        ncol = 2
+    elif 'hour' in label_type:
+        every_n = 3
+
     m_loc = 'upper right'
-    lgnd = plt.legend([lg_handles[idx] for _i, idx in enumerate(order) if _i % every_n == 0],[lg_labels[idx] for _i, idx in enumerate(order) if _i % every_n == 0], loc=m_loc)
+    lgnd = plt.legend([lg_handles[idx] for _i, idx in enumerate(order) if _i % every_n == 0],[lg_labels[idx] for _i, idx in enumerate(order) if _i % every_n == 0],
+                      loc=m_loc,ncol=ncol,columnspacing=0,borderaxespad=0,handletextpad=0)
     for i in range(len(lgnd.legendHandles)):
         lgnd.legendHandles[i]._sizes = [30]
         lgnd.legendHandles[i].set_alpha(1)
@@ -109,7 +114,7 @@ def plot_multi_class_recalls(recalls, labels, average_accuracy, label_type, feat
     recalls = recalls[order]
     labels = labels[order]
 
-    plt.plot(recalls,c=c)
+    plt.plot(recalls,c=c,linewidth=3)
     ax = plt.gca()
     ax.axhline(y=average_accuracy,linestyle='--',c=c)
     plt.text(0.1,average_accuracy+1,'{}%'.format(np.round(average_accuracy,1)),color=c)
@@ -451,6 +456,7 @@ def plot_playback_exp(gmm_model, feat, af_data, labs, site, site_playback_files,
 
         xs = []
         ys = []
+        if 'sinusoid' in unq_cat: continue 
         print('site {}, sounds {}'.format(site, unq_cat))
         for pb_f in site_playback_files[cat_idxs]:
             dist = int(pb_f.split('-')[1].split('m')[0])

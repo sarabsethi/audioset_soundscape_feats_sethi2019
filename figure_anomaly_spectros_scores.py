@@ -18,7 +18,7 @@ plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
 
 
-fig = plt.figure(figsize=(10,8))
+fig = plt.figure(figsize=(10,9))
 
 site_gmm_model_f = 'B10_gmm-5.0days-10comps-diag_audio_moths_sorted_june2019-raw_audioset_feats_1s.pickle'
 with open(os.path.join('anomaly_gmms', site_gmm_model_f),'rb') as gmm_savef:
