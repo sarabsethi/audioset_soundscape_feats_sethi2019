@@ -1,5 +1,5 @@
 from plot_libs import plot_low_dim_space
-from analysis_libs import get_embedded_data, change_lab_type, get_audio_mean_data, least_common_values
+from analysis_libs import get_embedded_data, change_lab_type, least_common_values
 import matplotlib.pyplot as plt
 import argparse
 import pickle
@@ -39,7 +39,7 @@ for pl in all_plots:
 
     for f in feats:
         # Load data from pickle files
-        with open(os.path.join('data','{}_{}.pickle'.format(pl['dts_name'],f)), 'rb') as savef:
+        with open(os.path.join('multiscale_data','{}_{}.pickle'.format(pl['dts_name'],f)), 'rb') as savef:
             audio_feats_data, labels, datetimes, recorders, unique_ids, classes, mins_per_feat = pickle.load(savef)
             labels, classes = change_lab_type(labels,datetimes,recorders,classes,unique_ids,type=pl['label_type'])
 

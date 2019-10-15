@@ -5,7 +5,7 @@ import numpy as np
 import itertools
 import matplotlib
 from tqdm import tqdm
-from plot_libs import plot_pdist_clusts, plot_cov_ellipse
+from plot_libs import plot_cov_ellipse
 from analysis_libs import get_clusters, get_embedded_data
 from scipy.stats import multivariate_normal
 from tqdm import tqdm
@@ -39,7 +39,6 @@ in_samp_anoms = -1 * gmm_model.score_samples(af_data)
 
 pca = PCA(n_components=2)
 af_data_red = pca.fit_transform(af_data)
-#plt.scatter(af_data_red[:,0],af_data_red[:,1], c='k', s=1)
 
 eigenvector = np.array([pca.components_]).T
 eigenvector = np.reshape(eigenvector, (eigenvector.shape[:2]))
@@ -75,8 +74,6 @@ for cl in clusts:
     cl_anoms = in_samp_anoms[cl_idxs]
     ci = cl_idxs[np.argmax(cl_anoms)]
     chosen_idxs.append(ci)
-
-#norm_sounds_idxs = [76629, 295990, 189844, 297798, 411905, 129980, 279533, 237847, 74379, 316080]
 
 print(chosen_idxs)
 
@@ -128,8 +125,6 @@ for dts in datasets:
     line_lab_x = np.inf
 
     for c_ix, unq_cat in enumerate(unq_cats):
-        if 'sinusoid' in unq_cat: continue
-
         cat_idxs = np.where((unq_categories_idxs == c_ix))[0]
         cat_playback_files = all_playback_files[cat_idxs]
 

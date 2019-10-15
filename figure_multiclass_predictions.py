@@ -1,4 +1,4 @@
-from analysis_libs import multi_class_classification, get_special_labels
+from analysis_libs import multi_class_classification, change_lab_type
 from plot_libs import plot_multi_class_recalls
 import matplotlib.pyplot as plt
 import matplotlib
@@ -40,10 +40,12 @@ for plot in all_plots:
 
     for f in feats:
         # Load data from pickle files
-        with open(os.path.join('data','{}_{}.pickle'.format(plot['dts'],f)), 'rb') as savef:
+        with open(os.path.join('multiscale_data','{}_{}.pickle'.format(plot['dts'],f)), 'rb') as savef:
             audio_feats_data, labels, datetimes, recorders, unique_ids, classes, mins_per_feat = pickle.load(savef)
 
-        new_labels = get_special_labels(datetimes, recorders, unique_ids, type=plot['label_type'])
+        new_label_ixs, new_classes = change_lab_type(labels,datetimes,recorders,classes,unique_ids,type=plot['label_type'])
+        new_labels = new_classes[new_label_ixs]
+
         cm, cm_labs, acc, recalls = multi_class_classification(audio_feats_data, new_labels, k_fold=k_folds)
 
         plot_multi_class_recalls(recalls, cm_labs, acc, plot['label_type'], f)
