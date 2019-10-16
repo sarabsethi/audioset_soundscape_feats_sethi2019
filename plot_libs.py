@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
-from analysis_libs import get_land_use_type, uniqueify_list, get_label_order
+from analysis_libs import get_land_use_type, uniqueify_list, get_label_order, get_clusters, get_embedded_data
 from sklearn.decomposition import PCA
 import matplotlib
 from datetime import datetime
@@ -140,6 +140,66 @@ def lighten_color(color, amount=0.5):
     c = colorsys.rgb_to_hls(*mc.to_rgb(c))
     return colorsys.hls_to_rgb(c[0], 1 - amount * (1 - c[1]), c[2])
 
+
+def plot_2d_anom_schematic(gmm_model, af_data, labs, dts, uq_ids, num_anoms):
+    print('Plotting 2D schematic of anomaly detection GMM')
+
+    in_samp_anoms = -1 * gmm_model.score_samples(af_data)
+
+    pca = PCA(n_components=2)
+    af_data_red = pca.fit_transform(af_data)
+
+    eigenvector = np.array([pca.components_]).T
+    eigenvector = np.reshape(eigenvector, (eigenvector.shape[:2]))
+
+    for cov, mean, weight in zip(gmm_model.covariances_,gmm_model.means_, gmm_model.weights_):
+        mean_red = pca.transform(mean.reshape(1, -1))[0]
+        mean_raw_tranform = np.dot(eigenvector.T, mean)
+        diffs = mean_red - mean_raw_tranform
+
+        cov_raw_tranform = np.dot(np.dot(eigenvector.T, np.diag(cov)),eigenvector)
+        cov_red = pca.transform(cov.reshape(1, -1))[0]
+        plot_cov_ellipse(cov_raw_tranform,mean_red,nstd=2,alpha=weight*1.5)
+
+    means_red = pca.transform(gmm_model.means_)
+
+    plt.scatter(means_red[:,0],means_red[:,1], c='blue', s=200*gmm_model.weights_, label='GMM centre')
+
+    sort_idx = np.flip(np.argsort(in_samp_anoms))
+    in_samp_anoms_sorted = in_samp_anoms[sort_idx]
+    uq_ids_sorted = uq_ids[sort_idx]
+    af_data_sorted = af_data[sort_idx,:]
+    dts_sorted = dts[sort_idx]
+
+    top_data = af_data[sort_idx[:num_anoms],:]
+    top_labs = uq_ids[sort_idx[:num_anoms]]
+
+    clusts, ord_pdist, ord_pdist_labels = get_clusters(top_data, top_labs)
+
+    chosen_idxs = []
+
+    for cl in clusts:
+        cl_idxs = np.asarray([idx for idx, el in enumerate(uq_ids) if el in cl])
+        cl_anoms = in_samp_anoms[cl_idxs]
+        ci = cl_idxs[np.argmax(cl_anoms)]
+        chosen_idxs.append(ci)
+
+    print(chosen_idxs)
+
+    anoms_red = af_data_red[chosen_idxs,:]
+    plt.scatter(anoms_red[:,0],anoms_red[:,1],c='r',marker='*',s=100,label='Anomaly')
+
+    frame1 = plt.gca()
+    frame1.axes.get_xaxis().set_ticks([])
+    frame1.axes.get_yaxis().set_ticks([])
+    plt.xlabel('PCA: Dim 1')
+    plt.ylabel('PCA: Dim 2')
+    plt.title('Acoustic feature space')
+    plt.axis('equal')
+
+    lgnd = plt.legend()
+    for i in range(len(lgnd.legendHandles)):
+        lgnd.legendHandles[i]._sizes = [100]
 
 # Get human readable dimensionality reduction names
 def get_dimred_nice_name(raw_name):

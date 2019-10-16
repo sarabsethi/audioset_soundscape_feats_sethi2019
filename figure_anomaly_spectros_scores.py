@@ -8,7 +8,6 @@ from plot_libs import gmm_plot_ellipses
 from scipy.io import wavfile
 from scipy import signal
 import os
-from tqdm import tqdm
 import pickle
 from sklearn import preprocessing
 import matplotlib.colors as colors
