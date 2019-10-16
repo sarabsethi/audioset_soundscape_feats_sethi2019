@@ -38,7 +38,7 @@ for site_ix, site in enumerate(sites):
 
     fig.add_subplot(n_splots_y, n_splots_x, splot_idx)
     splot_idx += 1
-    plot_playback_exp(gmm_model, feat, af_data, labs, site, site_playback_files, anom_exp_dir)
+    plot_playback_exp(gmm_model, feat, af_data, labs, site_playback_files, anom_exp_dir)
     plt.title(title)
 
 plt.legend(bbox_to_anchor=(1.5, 1))

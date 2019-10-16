@@ -4,7 +4,6 @@ import random
 import numpy as np
 from sklearn.datasets.samples_generator import make_blobs
 from sklearn.mixture import GaussianMixture
-from plot_libs import gmm_plot_ellipses
 from scipy.io import wavfile
 from scipy import signal
 import os
