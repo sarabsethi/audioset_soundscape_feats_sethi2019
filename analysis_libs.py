@@ -46,8 +46,7 @@ def get_embedded_data(data,labels,dimred,dims=2,return_dimred=False,balance_befo
     dims = int(np.min([dims,data.shape[1]]))
 
     if np.min(data.shape) == 1 or dimred == 'none':
-        print('dimred is none, or np.min(data.shape) == 1')
-        return [], []
+        raise Exception('dimred is none, or np.min(data.shape) == 1')
 
     # Pick which dimensionality reduction technique to use
     dim_red_obj = None
@@ -72,8 +71,7 @@ def get_embedded_data(data,labels,dimred,dims=2,return_dimred=False,balance_befo
         # Principal Component Analysis
         dim_red_obj = PCA(n_components=dims)
     else:
-        print('Unrecognised dimensionality reduction dimred: {}'.format(dimred))
-        return [], []
+        raise Exception('Unrecognised dimensionality reduction dimred: {}'.format(dimred))
 
     # Normalise features to [0,1] range
     print('Normalising features to [0,1] before dimensionality reduction using {}'.format(dimred))
