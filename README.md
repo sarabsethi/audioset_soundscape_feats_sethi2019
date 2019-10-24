@@ -1,8 +1,14 @@
 # audioset_soundscape_feats_sethi2019
 Reproducability code for Sethi et. al. 2019 (in prep.)
 
+[![DOI](https://zenodo.org/badge/112852626.svg)](https://zenodo.org/badge/latestdoi/112852626)
+
 ## Setup
-Data files are stored on Zenodo at .... Download the `.zip` file and extract all folders into this directory. We provide calculated features for all the audio used in our analyses in `.pickle` format.
+Data files are stored on Zenodo at:
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3491914.svg)](https://doi.org/10.5281/zenodo.3491914)
+
+Download the `.zip` file and extract all folders into this directory. We provide calculated features for all the audio used in our analyses in `.pickle` format.
 
 Code is tested using Python 3.6 on an Anaconda installation
 
