@@ -253,16 +253,15 @@ def get_land_use_type(rec):
     '''
 
     if 'AM ' in rec: rec = rec[3:]
-    if rec in ['OP Belian', 'OP3 843', 'C Matrix', 'D Matrix', 'E1 651'] or rec in ['C_Matrix','D_Matrix']:
-        return 'Low'
-    elif rec in ['E10 654', 'E matrix 647', 'E100 658', 'E1 648'] or rec in ['E1']:
-        return 'Low-mid'
-    elif rec in ['D100 641', 'E100 edge', 'C10 621', 'D10 639'] or rec in ['E100', 'D100']:
-        return 'Mid'
-    elif rec in ['D1 634', 'D100 643', 'B10', 'B matrix 599'] or rec in ['B10']:
-        return 'Mid-high'
-    elif rec in ['VJR 1', 'VJR 2', 'LFE 703', 'LFE 705'] or rec in ['VJR1','VJR2']:
-        return 'High'
+
+    if rec in ['C Matrix', 'D Matrix','E1 651'] or rec in ['C_Matrix','D_Matrix']:
+        return r'$\leq 2.45$'
+    elif rec in ['E matrix 647','E1 648', 'D100 641'] or rec in ['E1', 'D100']:
+        return '2.45 - 2.6'
+    elif rec in ['E100 edge', 'C10 621', 'D1 634', 'D100 643'] or rec in ['E100']:
+        return '2.6 - 2.75'
+    elif rec in ['B10', 'VJR 1', 'VJR 2', 'LFE 703'] or rec in ['VJR1','VJR2','B10']:
+        return r'$\geq 2.75$'
     elif 'Riparian' in rec or 'B1 602' in rec or rec in ['Riparian_2','B1']:
         return 'River'
     else:
@@ -278,22 +277,22 @@ def get_land_use_ny_type(rec):
     rec_low = rec.lower()
     rec_num = int(rec_low[1:])
 
-    low_alpha = [26,27,13,19,29,16]
-    low_mid_alpha = [20,12,14,25,30]
-    mid_alpha = [2,3,7,28,22,1]
-    mid_high_alpha = [23,9,21,5,24,10]
-    high_alpha = [6,17,4,18,11,8,15]
+    low_alpha = [24,8,16,14,3,23]
+    low_mid_alpha = [4,17,2,6,22]
+    mid_alpha = [13,25,27,20,7,12]
+    mid_high_alpha = [5,21,11,29,15,1]
+    high_alpha = [10,28,9,26,19,30,18]
 
     if rec_num in low_alpha:
-        return 'Low'
+        return r'$\leq 1.4$'
     elif rec_num in low_mid_alpha:
-        return 'Low-mid'
+        return '1.4 - 1.7'
     elif rec_num in mid_alpha :
-        return 'Mid'
+        return '1.7 - 2.0'
     elif rec_num in mid_high_alpha:
-        return 'Mid-high'
+        return '2.0 - 2.3'
     elif rec_num in high_alpha:
-        return 'High'
+        return r'$\geq 2.3$'
     else:
         return rec
 

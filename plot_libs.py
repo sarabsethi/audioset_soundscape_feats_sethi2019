@@ -7,6 +7,7 @@ import matplotlib
 from datetime import datetime
 import os
 import pickle
+import calendar
 
 
 '''
@@ -75,20 +76,24 @@ def plot_low_dim_space(embedded_data,labels,classes,dimred,label_type,plot_scale
     lg_handles, lg_labels = plt.gca().get_legend_handles_labels()
     order = get_label_order(lg_labels,label_type)
     every_n = 1
-    ncol = 1
-    if 'month' in label_type: ncol = 2
-    elif 'hour' in label_type: every_n = 3
+    if 'hour' in label_type: every_n = 2
     m_loc = 'upper right'
     lgnd = plt.legend([lg_handles[idx] for _i, idx in enumerate(order) if _i % every_n == 0],[lg_labels[idx] for _i, idx in enumerate(order) if _i % every_n == 0],
-                      loc=m_loc,ncol=ncol,columnspacing=0,borderaxespad=0,handletextpad=0)
+                      loc=m_loc,ncol=1,columnspacing=0,borderaxespad=0,handletextpad=0,markerfirst=True)
+    frame = lgnd.get_frame()
+    frame.set_edgecolor('k')
     for i in range(len(lgnd.legendHandles)):
         lgnd.legendHandles[i]._sizes = [30]
         lgnd.legendHandles[i].set_alpha(1)
 
     # Sort out axis labels
     ax = plt.gca()
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
+
+    xpadding = 1.1
+    if 'dataset' in label_type: xpadding = 1.35
+    ax.set_xlim(ax.get_xlim()[0],ax.get_xlim()[1]*xpadding)
+    #ax.spines['top'].set_visible(False)
+    #ax.spines['right'].set_visible(False)
     ax.xaxis.set_ticklabels([])
     ax.yaxis.set_ticklabels([])
     plt.xticks([])
@@ -117,10 +122,14 @@ def plot_multi_class_recalls(recalls, labels, average_accuracy, label_type, feat
     labels = labels[order]
 
     # Plotting recalls and colours
-    if 'audioset' in feat: c = 'r'
-    elif 'sscape' in feat: c = 'b'
+    if 'audioset' in feat:
+        c = 'r'
+        linestyle = '-'
+    elif 'sscape' in feat:
+        c = 'b'
+        linestyle = '-.'
     else: c = 'k'
-    plt.plot(recalls,c=c,linewidth=3)
+    plt.plot(recalls,c=c,linewidth=3,linestyle=linestyle)
 
     # Dotted line for average recall
     ax = plt.gca()
@@ -136,6 +145,8 @@ def plot_multi_class_recalls(recalls, labels, average_accuracy, label_type, feat
     elif 'month' in label_type:
         ax.xaxis.set_ticks(ax.get_xticks()[::2])
         ax.xaxis.set_ticklabels(labels[::2])
+
+    ax.set_ylim(0,100)
 
 
 def plot_2d_anom_schematic(gmm_model, af_data, labs, dts, uq_ids, num_anoms):
@@ -295,16 +306,16 @@ def get_label_nice_name(label, label_type):
     '''
 
     if label_type == 'dataset':
-        nice_names = {'audio_moths_sorted_june2019': 'Sabah (Audiomoth)',
-                      'PC_recordings': 'Sabah, MY (Tascam)',
+        nice_names = {'audio_moths_sorted_june2019': 'Sabah, MY\n(Audiomoth)',
+                      'PC_recordings': 'Sabah, MY\n(Tascam)',
                       'PC_recordings_nowater': 'Sabah, MY (Tascam) (no water sites)',
                       'dena_sabah_sorted_data': 'Sabah, MY various sites',
-                      'cornell_sorted_balanced_data': 'Ithaca, USA (summer)',
-                      'cornell_winter_sorted_balanced_data': 'Ithaca, USA (winter)',
-                      'cornell_seasonal_mic': 'Ithaca, USA (all seasons)',
-                      'cornell_nz_data_sorted': 'South Island, NZ',
-                      'sulawesi_sorted_data': 'Sulawesi, ID',
-                      'wrege_africa_data': 'Republic of the Congo'
+                      'cornell_sorted_balanced_data': 'Ithaca, USA\n(Swift)',
+                      'cornell_winter_sorted_balanced_data': 'Ithaca, USA\nWinter',
+                      'cornell_seasonal_mic': 'Ithaca, USA\n(Custom mic)',
+                      'cornell_nz_data_sorted': 'South Island,\nNZ (Swift)',
+                      'sulawesi_sorted_data': 'Sulawesi, ID\n(Swift)',
+                      'wrege_africa_data': 'Nouabalé-\nNdoki, COG\n(Swift)'
                       }
         if label in nice_names: return nice_names[label]
 
@@ -340,11 +351,10 @@ def get_label_colour(label, label_type='site'):
         return lighten_color(plt.cm.hsv(hour_norm),1.2)
 
     if 'land-use' in label_type:
-        if label == 'low': return 'sienna'
-        elif label == 'low-mid': return 'darkgoldenrod'
-        elif label == 'mid': return 'g'
-        elif label == 'mid-high': return 'darkslategray'
-        elif label == 'high': return 'k'
+        if label == '$\\leq 2.45$': return 'sienna'
+        elif label == '2.45 - 2.6': return 'darkgoldenrod'
+        elif label == '2.6 - 2.75': return 'g'
+        elif label == '$\\geq 2.75$': return 'k'
         elif label == 'river' or label == 'water': return 'blue'
 
     return 'k'
@@ -359,15 +369,24 @@ def get_label_order(labels, lab_type):
     if 'month' in lab_type:
         reord = [list(calendar.month_abbr).index(c) for c in labels]
 
-    elif 'land-use' in lab_type:
-        labels = [l.split(' ')[0] for l in labels]
+    elif lab_type == 'land-use-ny':
         reord = np.ones(len(labels))*-1
         for ix, lb in enumerate(labels):
-            if lb.lower() == 'low': reord[ix] = 0
-            if lb.lower() == 'low-mid': reord[ix] = 1
-            if lb.lower() == 'mid': reord[ix] = 2
-            if lb.lower() == 'mid-high': reord[ix] = 3
-            if lb.lower() == 'high': reord[ix] = 4
+            if lb ==  '$\\leq 1.4$': reord[ix] = 0
+            if lb == '1.4 - 1.7': reord[ix] = 1
+            if lb == '1.7 - 2.0': reord[ix] = 2
+            if lb == '2.0 - 2.3': reord[ix] = 3
+            if lb ==  '$\\geq 2.3$': reord[ix] = 4
+        for ix, r in enumerate(reord):
+            if r == -1: reord[ix] = np.max(reord) + 1
+
+    elif lab_type == 'land-use' :
+        reord = np.ones(len(labels))*-1
+        for ix, lb in enumerate(labels):
+            if lb ==  '$\\leq 2.45$': reord[ix] = 0
+            if lb == '2.45 - 2.6': reord[ix] = 1
+            if lb == '2.6 - 2.75': reord[ix] = 2
+            if lb ==  '$\\geq 2.75$': reord[ix] = 3
         for ix, r in enumerate(reord):
             if r == -1: reord[ix] = np.max(reord) + 1
 

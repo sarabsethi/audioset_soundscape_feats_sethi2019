@@ -11,7 +11,7 @@ import pickle
 from sklearn import preprocessing
 import matplotlib.colors as colors
 
-matplotlib.rcParams.update({'font.size': 20})
+matplotlib.rcParams.update({'font.size': 24})
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
 
@@ -60,10 +60,10 @@ for wav_f,dist in zip(all_wav_fs,dists):
             anom_exp_results = pickle.load(savef,encoding='latin1')
         feat_data = anom_exp_results['raw_audioset_feats_1s']
         feat_data = feat_data.reshape((feat_data.shape[1],feat_data.shape[2]))
-        anom_scores = -1 * gmm_model.score_samples(feat_data)
+        anom_scores_raw = -1 * gmm_model.score_samples(feat_data)
 
-        offset = 510
-        anom_scores = np.log(anom_scores + offset)
+        offset = 505
+        anom_scores = np.log(anom_scores_raw + offset)
         anom_scores = (anom_scores - 0.34) * ((Sxx.shape[0]-2) / 11)
 
         min_max_scaler = preprocessing.MinMaxScaler(feature_range=(0, Sxx.shape[1]-1))
@@ -75,20 +75,24 @@ for wav_f,dist in zip(all_wav_fs,dists):
     ax = plt.gca()
     ax2 = plt.gca().twinx()
 
-    if splot_idx == 2:
-        ax.set_yticks(ax.get_ylim())
-        f_khz = [int(np.round(f_hz/1000)) for f_hz in f]
-        ax.set_yticklabels([f_khz[0],f_khz[-1]])
-        ax.set_ylabel('Frequency (kHz)')
-    else:
-        ax.set_yticks([])
+    ax.set_yticks([ax.get_ylim()[0],ax.get_ylim()[1]/2,ax.get_ylim()[1]])
+    f_khz = [int(np.round(f_hz/1000)) for f_hz in f]
+    ax.set_yticklabels([f_khz[0],f_khz[int(len(f_khz)/2)],f_khz[-1]])
 
-    ax2.set_yticks([])
+    if splot_idx == 2:
+        ax.set_ylabel('Frequency\n(kHz)')
+
+    if splot_idx > 2:
+        ax2.set_yticks(ax2.get_ylim())
+        ax2.set_yticklabels([-0.5,85])
+    else:
+        ax2.set_yticks([])
+
     if splot_idx == 3:
-        ax2.set_ylabel('Anomaly score')
+        ax2.set_ylabel('Anomaly score\n(10e3)')
 
 ax.set_xlabel('Time (secs)')
 
 plt.tight_layout()
-plt.savefig('figs/figure_anom_spectros_scores.pdf')
+plt.savefig('figs/figure_anom_spectros_scores.svg')
 plt.show()

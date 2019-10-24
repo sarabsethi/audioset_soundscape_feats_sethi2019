@@ -13,14 +13,17 @@ Multiclass classification problems using eco-acoustic features
 
 matplotlib.rcParams.update({'font.size': 24})
 plt.rc('text', usetex=True)
+matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{amsmath}"]
 plt.rc('font', family='serif')
 
 feats = ['raw_audioset_feats_300s','v3_comp_sscape_idx_299s']
-all_plots = [{'title':'Ithaca, USA: biodiversity', 'dts':'cornell_sorted_balanced_data', 'label_type':'land-use-ny'},
-             {'title':'Sabah, MY: AGB', 'dts':'audio_moths_sorted_june2019', 'label_type':'land-use'},
+all_plots = [{'title':'Ithaca, USA: species richness', 'dts':'cornell_sorted_balanced_data', 'label_type':'land-use-ny'},
+             {'title':'Sabah, MY: habitat quality', 'dts':'audio_moths_sorted_june2019', 'label_type':'land-use'},
              {'title':'Ithaca, USA: monthly', 'dts':'strictbal_cornell_seasonal_mic', 'label_type':'monthly'},
              {'title':'Sabah, MY: hourly', 'dts':'strictbal__specAM-VJR-1audio_moths_sorted_june2019', 'label_type':'hourly'}
              ]
+panel_labels = ['(a)','(b)','(c)','(d)']
+
 # How many training test splits - recommend 5
 k_folds = 5
 
@@ -37,6 +40,8 @@ for plot in all_plots:
     subplt_idx += 1
 
     ax = plt.gca()
+    ax.text(-0.1, 1.15, panel_labels[subplt_idx-2], transform=ax.transAxes,
+      fontsize=28, fontweight='bold', va='top', ha='right')
 
     for f in feats:
         # Load data from pickle files

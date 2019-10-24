@@ -8,17 +8,19 @@ from plot_libs import plot_cov_ellipse, plot_2d_anom_schematic
 from scipy.stats import multivariate_normal
 from sklearn.decomposition import PCA
 
-n_subplots_x = 2
-n_subplots_y = 2
+n_subplots_x = 3
+n_subplots_y = 1
 
-fig = plt.figure(figsize=(20,19))
-matplotlib.rcParams.update({'font.size': 22})
+fig = plt.figure(figsize=(28,9))
+matplotlib.rcParams.update({'font.size': 24})
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
 
 
 # First do the 2D plot of the GMM at one of the sites
 fig.add_subplot(n_subplots_y,n_subplots_x,1)
+ax = plt.gca()
+ax.text(-0.02, 1.05, '(a)', transform=ax.transAxes, fontsize=28, fontweight='bold', va='top', ha='right')
 
 feat = 'raw_audioset_feats_1s'
 anom_exp_dir = 'anomaly_playback_exps'
@@ -34,8 +36,19 @@ with open(os.path.join('anomaly_gmms', '{}{}'.format(site,gmm_file_ext)),'rb') a
 
 plot_2d_anom_schematic(gmm_model, af_data, labs, dts, uq_ids, num_anoms)
 
+plt.show()
+exit()
+
+# Make the frame for the middle plot (manually edited in from figure_anomaly_spectros_scores.py in manuscript)
+fig.add_subplot(n_subplots_y,n_subplots_x,2)
+ax = plt.gca()
+ax.text(-0.02, 1.05, '(b)', transform=ax.transAxes, fontsize=28, fontweight='bold', va='top', ha='right')
+
+
 # Then plot the averaged playback experiment results across all sites
 fig.add_subplot(n_subplots_y,n_subplots_x,3)
+ax = plt.gca()
+ax.text(-0.02, 1.05, '(c)', transform=ax.transAxes, fontsize=28, fontweight='bold', va='top', ha='right')
 
 datasets = [{'sites': ['B10','C_Matrix','B1','D_Matrix','D100','E1','E100','Riparian_2','VJR1','VJR2'],
             'gmm_file_ext': '_gmm-5.0days-10comps-diag_audio_moths_sorted_june2019-{}.pickle'.format(feat)}
@@ -127,6 +140,6 @@ for dts in datasets:
 plt.title('Anomaly sensitivity')
 
 plt.tight_layout()
-plt.savefig('figs/anomalies.pdf')
+plt.savefig('figs/anomalies.svg')
 
 plt.show()

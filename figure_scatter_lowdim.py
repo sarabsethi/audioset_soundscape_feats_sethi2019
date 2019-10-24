@@ -23,10 +23,12 @@ plt.rc('legend',fontsize='smaller')
 # Feature sets and dimensionality reduction techniques to test
 feats = ['raw_audioset_feats_300s']
 all_plots = [{'title': 'Global', 'dts_name':'cornell_sorted_balanced_data+audio_moths_sorted_june2019+cornell_seasonal_mic+PC_recordings+sulawesi_sorted_data+wrege_africa_data+cornell_nz_data_sorted', 'label_type':'dataset', 'dimred':'umap_vis'},
-            {'title': 'Sabah, MY: land-use', 'dts_name':'audio_moths_sorted_june2019', 'label_type':'land-use', 'dimred':'umap_vis_landuse'},
+            {'title': 'Sabah, MY: habitat quality', 'dts_name':'audio_moths_sorted_june2019', 'label_type':'land-use', 'dimred':'umap_vis_landuse'},
             {'title': 'Ithaca, USA: seasonal', 'dts_name':'strictbal_cornell_seasonal_mic', 'label_type':'month', 'dimred':'umap_vis'},
             {'title': 'Sabah, MY: diurnal', 'dts_name':'strictbal__specAM-VJR-1audio_moths_sorted_june2019', 'label_type':'hour', 'dimred':'umap_vis'}
             ]
+
+panel_labels = ['(a)','(b)','(c)','(d)']
 
 # Figure setup
 fig_s = 6
@@ -52,6 +54,11 @@ for pl in all_plots:
         # Plot embedded data
         fig.add_subplot(n_subplots_y,n_subplots_x,subplt_idx)
         subplt_idx+=1
+
+        ax = plt.gca()
+        ax.text(-0.02, 1.05, panel_labels[subplt_idx-2], transform=ax.transAxes,
+          fontsize=28, fontweight='bold', va='top', ha='right')
+
         plot_low_dim_space(data_red, data_red_labels, classes=classes,
                            dimred=pl['dimred'], plot_scale=plot_scale,
                            label_type=pl['label_type'])
