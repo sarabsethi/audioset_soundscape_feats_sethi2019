@@ -2,17 +2,19 @@ import numpy as np
 import umap
 from sklearn import preprocessing
 from sklearn.cluster import AffinityPropagation
+from scipy.cluster.hierarchy import linkage
 from scipy.spatial.distance import pdist, squareform
 from sklearn.decomposition import PCA
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.metrics import confusion_matrix
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import balanced_accuracy_score, recall_score
+from sklearn.metrics import balanced_accuracy_score, f1_score
 import calendar
 import collections
 import heapq
 from operator import itemgetter
 from imblearn.under_sampling import RandomUnderSampler
+
 
 '''
 This module provides functions to assist with analysis of our data
@@ -104,6 +106,7 @@ def get_embedded_data(data,labels,dimred,dims=2,return_dimred=False,balance_befo
 def multi_class_classification(X, y, k_fold = 5):
     '''
     Do a multiclass classification task using a random forest classifier
+    Accuracy is measured using f1 score
 
     Inputs:
         X (ndarray): feature data
@@ -114,8 +117,8 @@ def multi_class_classification(X, y, k_fold = 5):
         (All of the below are averaged from cross-fold validation results)
         cm (ndarray): confusion matrix of results
         cm_labels (ndarray): labels for the confusion matrix
-        accuracy (float): average recall across classes
-        recalls (ndarray): individual recalls for each class
+        average_accuracy (float): average accuracy across all classes
+        accuracies (ndarray): individual accuracies for each class
     '''
 
     X = np.asarray(X)
@@ -125,9 +128,8 @@ def multi_class_classification(X, y, k_fold = 5):
     sss = StratifiedShuffleSplit(n_splits=k_fold, test_size=0.2, random_state=0)
 
     # Do K fold cross validation
-    all_accuracies = []
     all_cms = []
-    all_recalls = []
+    all_accuracies = []
     print('Doing {} fold cross validation predictions. Classes: {}'.format(k_fold,np.unique(y)))
     for k, (train_index, test_index) in enumerate(sss.split(X, y)):
         X_train, X_test = X[train_index], X[test_index]
@@ -139,23 +141,22 @@ def multi_class_classification(X, y, k_fold = 5):
         predictions = clf.predict(X_test)
 
         # model accuracy for X_test
-        k_accuracy = balanced_accuracy_score(y_test, predictions)
-
-        print('{}/{} folds accuracy: {}'.format(k+1,k_fold,k_accuracy))
-        all_recalls.append(recall_score(y_test,predictions,average=None))
-        all_accuracies.append(k_accuracy)
+        class_scores = f1_score(y_test,predictions,average=None)
+        print('{}/{} folds mean accuracy: {}'.format(k+1,k_fold,np.mean(class_scores)))
+        all_accuracies.append(class_scores)
 
         cm_labels = np.unique(y)
         k_cm = confusion_matrix(y_test, predictions, labels=cm_labels)
         all_cms.append(k_cm)
 
     # Get averages across K fold cross validation
-    accuracy = np.mean(all_accuracies)
-    print('Average accuracy = {}'.format(accuracy))
-    recalls = np.mean(np.asarray(all_recalls),axis=0)
+    accuracies = np.mean(np.asarray(all_accuracies),axis=0)
+    average_accuracy = np.mean(accuracies)
+    print('Average accuracy = {}'.format(average_accuracy))
+
     cm = np.mean(np.asarray(all_cms),axis=0)
 
-    return cm, cm_labels, accuracy, recalls
+    return cm, cm_labels, average_accuracy, accuracies
 
 
 def change_lab_type(labels,datetimes,recorders,classes,unique_ids,type='dataset'):
@@ -234,6 +235,23 @@ def get_clusters(data, labels, return_ord_idx=False):
         return clusts, ordered_pdist, ordered_labels, pdist_order
     else:
         return clusts, ordered_pdist, ordered_labels
+
+
+def get_mean_feats_dendrogram(data, labels, classes):
+
+    mean_feats = []
+
+    for i,unique_rec in enumerate(classes):
+        rec_indices = np.where(labels == i)[0] # Rows of data belonging to this class
+
+        mean_feats.append(np.mean(data[rec_indices,:],axis=0))
+
+    mean_feats = np.asarray(mean_feats)
+    print(mean_feats.shape)
+
+    linked = linkage(mean_feats, 'single')
+    return linked
+
 
 
 def get_dataset_from_unq_id(unq_id):

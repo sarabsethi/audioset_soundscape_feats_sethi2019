@@ -17,7 +17,7 @@ matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{amsmath}"]
 plt.rc('font', family='serif')
 
 feats = ['raw_audioset_feats_300s','v3_comp_sscape_idx_299s']
-all_plots = [{'title':'Ithaca, USA: species richness', 'dts':'cornell_sorted_balanced_data', 'label_type':'land-use-ny'},
+all_plots = [{'title':'Ithaca, USA: biodiversity', 'dts':'cornell_sorted_balanced_data', 'label_type':'land-use-ny'},
              {'title':'Sabah, MY: habitat quality', 'dts':'audio_moths_sorted_june2019', 'label_type':'land-use'},
              {'title':'Ithaca, USA: monthly', 'dts':'strictbal_cornell_seasonal_mic', 'label_type':'monthly'},
              {'title':'Sabah, MY: hourly', 'dts':'strictbal__specAM-VJR-1audio_moths_sorted_june2019', 'label_type':'hourly'}
@@ -51,14 +51,18 @@ for plot in all_plots:
         new_label_ixs, new_classes = change_lab_type(labels,datetimes,recorders,classes,unique_ids,type=plot['label_type'])
         new_labels = new_classes[new_label_ixs]
 
-        cm, cm_labs, acc, recalls = multi_class_classification(audio_feats_data, new_labels, k_fold=k_folds)
+        cm, cm_labs, average_acc, accuracies = multi_class_classification(audio_feats_data, new_labels, k_fold=k_folds)
 
-        plot_multi_class_recalls(recalls, cm_labs, acc, plot['label_type'], f)
+        plot_multi_class_recalls(accuracies, cm_labs, average_acc, plot['label_type'], f)
         ax.set_title(plot['title'])
 
     if subplt_idx == 2 or subplt_idx == 4:
-        ax.set_ylabel('Recall (percentage)')
+        ax.set_ylabel('F1 score ($\%$)')
 
+    if plot['label_type'] == 'land-use-ny': ax.set_xlabel('Avian richness (species per hour)')
+    if plot['label_type'] == 'land-use': ax.set_xlabel('Above ground biomass ($log_{10}(t.ha^{-1})$)')
+    if plot['label_type'] == 'monthly': ax.set_xlabel('Month')
+    if plot['label_type'] == 'hourly': ax.set_xlabel('Time of day (hour)')
 
 plt.tight_layout()
 fig_savefile = os.path.join('figs','multiclass.svg')

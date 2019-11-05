@@ -22,20 +22,31 @@ plt.rc('legend',fontsize='smaller')
 
 # Feature sets and dimensionality reduction techniques to test
 feats = ['raw_audioset_feats_300s']
-all_plots = [{'title': 'Global', 'dts_name':'cornell_sorted_balanced_data+audio_moths_sorted_june2019+cornell_seasonal_mic+PC_recordings+sulawesi_sorted_data+wrege_africa_data+cornell_nz_data_sorted', 'label_type':'dataset', 'dimred':'umap_vis'},
-            {'title': 'Sabah, MY: habitat quality', 'dts_name':'audio_moths_sorted_june2019', 'label_type':'land-use', 'dimred':'umap_vis_landuse'},
-            {'title': 'Ithaca, USA: seasonal', 'dts_name':'strictbal_cornell_seasonal_mic', 'label_type':'month', 'dimred':'umap_vis'},
-            {'title': 'Sabah, MY: diurnal', 'dts_name':'strictbal__specAM-VJR-1audio_moths_sorted_june2019', 'label_type':'hour', 'dimred':'umap_vis'}
-            ]
+supp_figure = True
 
-panel_labels = ['(a)','(b)','(c)','(d)']
+if not supp_figure:
+    all_plots = [{'title': 'Global', 'leg_title': 'Location', 'dts_name':'cornell_sorted_balanced_data+audio_moths_sorted_june2019+cornell_seasonal_mic+PC_recordings+sulawesi_sorted_data+wrege_africa_data+cornell_nz_data_sorted', 'label_type':'dataset', 'dimred':'umap_vis'},
+                {'title': 'Sabah, MY: habitat quality', 'leg_title': 'AGB', 'dts_name':'audio_moths_sorted_june2019', 'label_type':'land-use', 'dimred':'umap_vis_landuse'},
+                {'title': 'Ithaca, USA: seasonal', 'leg_title': 'Month', 'dts_name':'strictbal_cornell_seasonal_mic', 'label_type':'month', 'dimred':'umap_vis'},
+                {'title': 'Sabah, MY: diurnal', 'leg_title': 'Hour', 'dts_name':'strictbal__specAM-VJR-1audio_moths_sorted_june2019', 'label_type':'hour', 'dimred':'umap_vis'}
+                ]
+    fig_savef = 'scatter'
+else:
+    all_plots = [{'title': 'Sulawesi, ID: diurnal', 'leg_title': 'Hour', 'dts_name':'strictbal__specT5sulawesi_sorted_data', 'label_type':'hour', 'dimred':'umap_vis'},
+                 {'title': 'Abel Tasman, NZ: diurnal', 'leg_title': 'Hour', 'dts_name':'strictbal__specS01cornell_nz_data_sorted', 'label_type':'hour', 'dimred':'umap_vis'},
+                 {'title': 'Nouabalé-Ndoki, COG: diurnal', 'leg_title': 'Hour', 'dts_name':'strictbal__specnn06f_mono_wetwrege_africa_data', 'label_type':'hour', 'dimred':'umap_vis'},
+                 {'title': 'Ithaca, USA: diurnal', 'leg_title': 'Hour', 'dts_name':'strictbal__specS10cornell_sorted_balanced_data', 'label_type':'hour', 'dimred':'umap_vis'}
+                 ]
+    fig_savef = 'supp_scatter'
+
+panel_labels = ['(a)','(b)','(c)','(d)','(e)','(f)','(g)','(h)']
 
 # Figure setup
 fig_s = 6
 n_subplots_x = np.min([len(all_plots),2])
 n_subplots_y = np.ceil(len(all_plots) / n_subplots_x)
 subplt_idx = 1
-fig = plt.figure(figsize=((fig_s+1)*(n_subplots_x),fig_s*n_subplots_y))
+fig = plt.figure(figsize=((fig_s+1)*(n_subplots_x),fig_s*n_subplots_y),dpi=300)
 
 for pl in all_plots:
 
@@ -61,10 +72,10 @@ for pl in all_plots:
 
         plot_low_dim_space(data_red, data_red_labels, classes=classes,
                            dimred=pl['dimred'], plot_scale=plot_scale,
-                           label_type=pl['label_type'])
+                           label_type=pl['label_type'], leg_title=pl['leg_title'])
         plt.title(pl['title'])
 
 plt.tight_layout()
-fig_savefile = os.path.join('figs','scatter.pdf')
-plt.savefig(fig_savefile, format="pdf")
+fig_savefile = os.path.join('figs','{}.svg'.format(fig_savef))
+plt.savefig(fig_savefile, format="svg")
 plt.show()

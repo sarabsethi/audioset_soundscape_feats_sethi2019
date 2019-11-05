@@ -15,7 +15,7 @@ This module provides functions to assist with plotting our data
 '''
 
 
-def plot_low_dim_space(embedded_data,labels,classes,dimred,label_type,plot_scale=1.0):
+def plot_low_dim_space(embedded_data,labels,classes,dimred,label_type,plot_scale=1.0,leg_title=''):
     '''
     Plot a low dimensional embedding of some acoustic feature data
 
@@ -66,7 +66,7 @@ def plot_low_dim_space(embedded_data,labels,classes,dimred,label_type,plot_scale
             pt_alpha = 0.1
 
         lab_name = get_label_nice_name(classes[i],label_type)
-        plt.scatter(x_data,y_data,color=pt_colors[rec_indices[0]],s=pt_sz*plot_scale,alpha=pt_alpha,marker=mrkr,zorder=1,label=lab_name)
+        plt.scatter(x_data,y_data,color=pt_colors[rec_indices[0]],s=pt_sz*plot_scale,alpha=pt_alpha,marker=mrkr,zorder=1,label=lab_name,rasterized=True)
         plt.scatter(x_mean,y_mean,color=pt_colors[rec_indices[0]],alpha=1,marker=mrkr,s=mean_sz*plot_scale,edgecolors='white',zorder=3)
 
         plt.xlabel('{}: Dim 1'.format(dimred_title))
@@ -79,7 +79,7 @@ def plot_low_dim_space(embedded_data,labels,classes,dimred,label_type,plot_scale
     if 'hour' in label_type: every_n = 2
     m_loc = 'upper right'
     lgnd = plt.legend([lg_handles[idx] for _i, idx in enumerate(order) if _i % every_n == 0],[lg_labels[idx] for _i, idx in enumerate(order) if _i % every_n == 0],
-                      loc=m_loc,ncol=1,columnspacing=0,borderaxespad=0,handletextpad=0,markerfirst=True)
+                      loc=m_loc,ncol=1,columnspacing=0,borderaxespad=0,handletextpad=0,markerfirst=True,title=leg_title,title_fontsize=14)
     frame = lgnd.get_frame()
     frame.set_edgecolor('k')
     for i in range(len(lgnd.legendHandles)):
@@ -313,7 +313,7 @@ def get_label_nice_name(label, label_type):
                       'cornell_sorted_balanced_data': 'Ithaca, USA\n(Swift)',
                       'cornell_winter_sorted_balanced_data': 'Ithaca, USA\nWinter',
                       'cornell_seasonal_mic': 'Ithaca, USA\n(Custom mic)',
-                      'cornell_nz_data_sorted': 'South Island,\nNZ (Swift)',
+                      'cornell_nz_data_sorted': 'Abel Tasman,\nNZ (Swift)',
                       'sulawesi_sorted_data': 'Sulawesi, ID\n(Swift)',
                       'wrege_africa_data': 'Nouabalé-\nNdoki, COG\n(Swift)'
                       }

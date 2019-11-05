@@ -13,6 +13,7 @@ import matplotlib.colors as colors
 
 matplotlib.rcParams.update({'font.size': 24})
 plt.rc('text', usetex=True)
+matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{amsmath}"]
 plt.rc('font', family='serif')
 
 
@@ -89,7 +90,7 @@ for wav_f,dist in zip(all_wav_fs,dists):
         ax2.set_yticks([])
 
     if splot_idx == 3:
-        ax2.set_ylabel('Anomaly score\n(10e3)')
+        ax2.set_ylabel('Anomaly score\n($\\times10^3$)')
 
 ax.set_xlabel('Time (secs)')
 
