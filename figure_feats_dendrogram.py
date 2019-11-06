@@ -6,6 +6,10 @@ import matplotlib
 import matplotlib.pyplot as plt
 from plot_libs import get_label_nice_name
 
+'''
+Debdrogram showing similarity between different ecosystems in acoustic feature space
+'''
+
 matplotlib.rcParams.update({'font.size': 16})
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
