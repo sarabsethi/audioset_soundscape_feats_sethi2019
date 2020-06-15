@@ -6,7 +6,7 @@ Reproducability code for Sethi et. al. 2019 (in prep.)
 ## Calculate features
 To calculate audioset features of your own audio files, follow the instructions in `calc_audioset_feats/test_calc_features.py`.
 
-This is heavily based on the official [VGGish documentation](https://github.com/tensorflow/models/tree/master/research/audioset/vggish), but we provide a convenient wrapper class.
+This is heavily based on the official [VGGish documentation](https://github.com/tensorflow/models/tree/master/research/audioset/vggish), but we additionally provide a convenient wrapper class around the Tensorflow implementation.
 
 ## Setup
 Precomputed features for the data used in our study are stored on Zenodo at:
