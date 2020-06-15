@@ -3,17 +3,22 @@ Reproducability code for Sethi et. al. 2019 (in prep.)
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3530203.svg)](https://doi.org/10.5281/zenodo.3530203)
 
+## Calculate features
+To calculate audioset features of your own audio files, follow the instructions in `calc_audioset_feats/test_calc_features.py`.
+
+This is heavily based on the official [VGGish documentation](https://github.com/tensorflow/models/tree/master/research/audioset/vggish), but we provide a convenient wrapper class.
+
 ## Setup
-Data files are stored on Zenodo at:
+Precomputed features for the data used in our study are stored on Zenodo at:
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3530206.svg)](https://doi.org/10.5281/zenodo.3530206)
 
-Download the `.zip` file and extract all folders into this directory. We provide calculated features for all the audio used in our analyses in `.pickle` format.
+Download the `.zip` file and extract all folders into this directory. We provide calculated audio features for all the data used in our publication in `.pickle` format, along with associated metadata (date, time, site of recordings etc.).
 
 Code is tested using Python 3.6 on an Anaconda installation
 
 ## Usage
-Python scripts included are:
+The Python scripts to reproduce figures/analyses from our paper are:
  
 * `figure_scatter_lowdim.py` generates 2D scatters of audio features at various spatial and temporal scales. UMAP is used as a dimensionality reduction technique
 
