@@ -4,6 +4,9 @@
 *.pickle
 *.zip
 *.wav
+!test.wav
+*.npz
+*.ckpt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
