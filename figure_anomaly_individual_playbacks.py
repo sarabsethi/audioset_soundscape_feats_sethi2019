@@ -15,7 +15,7 @@ feat = 'raw_audioset_feats_1s'
 gmm_file_ext_safe = '_gmm-5.0days-10comps-diag_audio_moths_sorted_june2019-{}.pickle'.format(feat)
 gmm_file_ext_cornell = '_gmm-5.0days-10comps-diag_cornell_playback_training_sorted-{}.pickle'.format(feat)
 
-fig = plt.figure()
+fig = plt.figure(figsize=(30,20))
 
 n_splots_x = np.min([4,len(sites)])
 n_splots_y = np.ceil(len(sites)/4)
@@ -43,4 +43,11 @@ for site_ix, site in enumerate(sites):
 
 plt.legend(bbox_to_anchor=(1.5, 1))
 plt.tight_layout()
+
+fig_savef = 'anom_individual_playbacks'
+fig_savefile = os.path.join('figs','{}.svg'.format(fig_savef))
+plt.savefig(fig_savefile, format="svg")
+fig_savefile_pdf = os.path.join('figs','{}.pdf'.format(fig_savef))
+plt.savefig(fig_savefile_pdf, format="pdf")
+
 plt.show()

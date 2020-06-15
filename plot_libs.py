@@ -89,15 +89,18 @@ def plot_low_dim_space(embedded_data,labels,classes,dimred,label_type,plot_scale
     # Sort out axis labels
     ax = plt.gca()
 
-    xpadding = 1.1
-    if 'dataset' in label_type: xpadding = 1.35
-    ax.set_xlim(ax.get_xlim()[0],ax.get_xlim()[1]*xpadding)
     #ax.spines['top'].set_visible(False)
     #ax.spines['right'].set_visible(False)
     ax.xaxis.set_ticklabels([])
     ax.yaxis.set_ticklabels([])
-    plt.xticks([])
-    plt.yticks([])
+    ax.set_xticks([])
+    ax.set_yticks([])
+
+    padding = 0.15
+    ax.set_xlim(ax.get_xlim()[0],ax.get_xlim()[1] + (ax.get_xlim()[1]-ax.get_xlim()[0])*padding)
+    y_offs = (ax.get_ylim()[1]-ax.get_ylim()[0])*padding
+    ax.set_ylim(ax.get_ylim()[0] - (y_offs/2),ax.get_ylim()[1] + (y_offs/2))
+
 
 def plot_multi_class_recalls(recalls, labels, average_accuracy, label_type, feat):
     '''

@@ -22,7 +22,7 @@ plt.rc('legend',fontsize='smaller')
 
 # Feature sets and dimensionality reduction techniques to test
 feats = ['raw_audioset_feats_300s']
-supp_figure = True
+supp_figure = False
 
 if not supp_figure:
     all_plots = [{'title': 'Global', 'leg_title': 'Location', 'dts_name':'cornell_sorted_balanced_data+audio_moths_sorted_june2019+cornell_seasonal_mic+PC_recordings+sulawesi_sorted_data+wrege_africa_data+cornell_nz_data_sorted', 'label_type':'dataset', 'dimred':'umap_vis'},
@@ -78,4 +78,6 @@ for pl in all_plots:
 plt.tight_layout()
 fig_savefile = os.path.join('figs','{}.svg'.format(fig_savef))
 plt.savefig(fig_savefile, format="svg")
+fig_savefile_pdf = os.path.join('figs','{}.pdf'.format(fig_savef))
+plt.savefig(fig_savefile_pdf, format="pdf")
 plt.show()
