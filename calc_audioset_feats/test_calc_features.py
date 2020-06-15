@@ -1,24 +1,5 @@
 '''
-# GET STARTED: this is heavily based on the official VGGish documentation at https://github.com/tensorflow/models/tree/master/research/audioset/vggish
-# It covers everything you need to install dependencies etc and start extracting audio features from your data
-
-# Create a new python 3 conda environment
-conda create --name test-vggish-env python=3.6
-
-# Activate your new environment
-source activate test-vggish-env
-# (if this doesn't work, try "activate test-vggish-env" or "coda activate test-vggish-env" )
-
-# Install the required packages
-conda install -c numba numba
-pip install numpy resampy tensorflow==1.15 tf_slim six soundfile numba==0.43.0 llvmlite==0.32.1
-conda install -c conda-forge librosa
-
-# Installation ready, let's test it.
-python vggish_smoke_test.py
-
-# If we see "Looks Good To Me", then we're all setup correctly.
-# Use the below script as a template to calculate features easily and at different timescales etc.
+# See https://github.com/sarabsethi/audioset_soundscape_feats_sethi2019/tree/master/calc_audioset_feats for installation instructions
 '''
 
 from AudiosetAnalysis import AudiosetAnalysis
