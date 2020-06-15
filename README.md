@@ -1,6 +1,9 @@
 # audioset_soundscape_feats_sethi2019
 Reproducability code for Sethi et. al. 2019 (in prep.)
 
+
+This repo is archived on Zenodo:
+
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3530203.svg)](https://doi.org/10.5281/zenodo.3530203)
 
 ## Calculate features
