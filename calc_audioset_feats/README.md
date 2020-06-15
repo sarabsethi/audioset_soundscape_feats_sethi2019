@@ -31,4 +31,5 @@ We will cover everything you need to install dependencies etc and start extracti
 
 If you see "Looks Good To Me", then you're all setup correctly
 
-### 5. Use `test_calc_features.py` as a template to calculate audio features from your own data
+### 5. Calculate features of your own data
+Use `test_calc_features.py` as a template to calculate audio features from your own data - place audio files to be analysed in `audio_dir`
