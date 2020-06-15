@@ -1,6 +1,11 @@
 # Calculating acoustic features of your audio data. 
 
-This is heavily based on the official VGGish documentation at https://github.com/tensorflow/models/tree/master/research/audioset/vggish. We will cover everything you need to install dependencies etc and start extracting audio features from your data. Please ensure you have [Anaconda](https://www.anaconda.com/) installed before starting
+This is heavily based on the official VGGish documentation at https://github.com/tensorflow/models/tree/master/research/audioset/vggish. The main changes are
+
+* Allow analysis of .mp3 files as well as .wav format (using librosa)
+* Provide a convenient wrapper around the Tensorflow implementation in `AudiosetAnalysis.py`. See `test_calc_features.py` for an example of how to use it.
+
+We will cover everything you need to install dependencies etc and start extracting audio features from your data. Please ensure you have [Anaconda](https://www.anaconda.com/) installed before starting.
 
 ### 1. Create a new python 3 conda environment
 
