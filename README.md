@@ -1,5 +1,6 @@
 # audioset_soundscape_feats_sethi2019
-Reproducability code for Sethi et. al. 2019 (in prep.)
+
+Reproducability code for "Characterizing soundscapes across diverse ecosystems using a universal acoustic feature set" [(Sethi et. al. 2020, PNAS)](https://www.pnas.org/content/117/29/17049)
 
 
 This repo is archived on Zenodo:
